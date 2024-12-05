@@ -62,3 +62,12 @@ File Storage: Samples are stored on the filesystem, with metadata pointing to th
 
 Messaging: We may use JMS for notifications or asynchronous tasks, such as processing large audio files.
 
+### Diagrams
+
+#### Architecture
+
+![Architecture Diagram](AMT-JamCraft-architecture.png)
+
+#### Modelisation
+
+![Modelisation Diagram](AMT-JamCraft-modélisation.png)
