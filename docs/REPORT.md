@@ -6,15 +6,20 @@ JamCraft is a collaborative web app where multiple users can create music togeth
 
 ## **Description of the Application**
 
-JamCraft is built to push the boundaries of real-time collaboration using gRPC technology. The core idea is to have a shared environment where users can upload sound samples into a global library, add them to shared timelines, and edit them collaboratively. Each user sees the same timeline in real time and can interact with it. To make this happen, we use stacked timelines that let multiple users arrange and edit sound samples simultaneously.
+JamCraft is built to push the boundaries of real-time collaboration using gRPC technology. Its core concept revolves around enabling users to upload sound samples into a global library, arrange them on stacked timelines, and edit them with basic tools. All interactions happen in real-time, ensuring users see updates and actions from others instantly.
 
-We decided to go with Quarkus for the backend and PostgreSQL to store metadata about samples, project configurations, and user activity. The samples themselves will be stored on the server, and we’re still deciding between using database BLOBs or a filesystem. On the frontend, we’ll use a web app to give users a sleek and intuitive interface to interact with the timelines.
+The application focuses on responsiveness. Users can interact with stacked tracks, making edits such as trimming, moving, or deleting samples. Each user's cursor is tracked and displayed, offering intuitive collaboration. JamCraft is designed for a single shared session, making it easy for all users to jump in, pick a name, and start creating music together.
 
-The business domain is collaborative music creation. This means we focus on real-time interaction, simplicity, and responsiveness, while allowing users to unleash their creativity.
+### **Technology Stack**
+
+- **Backend:** Built with Quarkus and written in Java 21. It uses gRPC for real-time communication and PostgreSQL as the relational database.
+- **Frontend:** A modern, web-based interface built using gRPC-web.
+- **Database:** PostgreSQL is used to manage metadata (user data, sample details, timeline configuration), while the actual samples are stored in the server filesystem.
+- **Deployment:** The backend is containerized using **Docker** for consistent and portable deployment.
 
 ### **Why gRPC?**
 
-We chose gRPC because it’s designed for fast communication and offers advanced bidirectional streaming, which fits perfectly with the collaborative nature of JamCraft. Unlike traditional HTTP/REST, gRPC uses Protobuf for communication, which are lightweight and fast. This allows us to handle real-time updates, cursor tracking, and global timeline editing with minimal delay.
+gRPC is designed for fast communication and offers advanced bidirectional streaming, which fits perfectly with the collaborative nature of JamCraft. Unlike traditional HTTP/REST, gRPC uses Protobuf for communication, which are lightweight and fast. This allows us to handle real-time updates, cursor tracking, and global timeline editing with minimal delay.
 
 Here’s what we’ll explore with gRPC:
 
@@ -49,14 +54,11 @@ If time permits, we’d like to add features like user-specific permissions (e.g
 
 ## **Architecture**
 
-JamCraft is a multi-tier application with a clear separation of concerns. The frontend is the user interface, the backend handles logic and communication, and the database stores persistent data.
+JamCraft follows a three-tier architecture:
 
-The backend uses gRPC for real-time communication and PostgreSQL to store project data. Samples themselves are stored either as BLOBs in the database or in a dedicated folder on the server. The entire backend runs in a Docker container for consistency and easy deployment.
+Real-Time Playback: Samples are played simultaneously on the frontend using the Web Audio API, synchronized via gRPC. This ensures low-latency playback while offloading audio processing to the client.
 
-For messaging, we might use JMS for asynchronous notifications or background tasks, such as notifying users when a new sample is uploaded or performing long-running operations like sample format conversions.
+File Storage: Samples are stored on the filesystem, with metadata pointing to their locations. This avoids database bloat and improves performance.
 
-We’ll use diagrams to illustrate the architecture, including:
+Messaging: We may use JMS for notifications or asynchronous tasks, such as processing large audio files.
 
-- A global architecture diagram showing how the frontend, backend, and database interact.
-- A relational schema for the database to show how we organize data like samples, timelines, and users.
-- A messaging flow diagram for real-time updates, highlighting how gRPC streams keep everything in sync.
