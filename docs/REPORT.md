@@ -2,20 +2,24 @@
 
 **Authors:** Yanis Ouadahi, Samuel Roland, Jarod Streckeisen, Timothée Van Hove
 
-JamCraft is a collaborative web app where multiple users can create music together by mixing and editing sound samples. If you know GarageBand, think of JamCraft as its collaborative cousin, but simplified and designed to work seamlessly in a browser. Users can contribute their own sound samples, manipulate tracks on a shared timeline, and see live updates from others. It's all about making music together in real time.
+JamCraft is a collaborative web app where users can unleash their creativity by mixing and editing sound samples in real time. Think of it as a playful, collaborative cousin of GarageBand, but without the pressure of perfection. It’s a sandbox for sound—a place to have fun, experiment with music, and jam together with friends or strangers online.
+
+## **Purpose and Business Domain**
+
+The purpose of JamCraft is simple: make music creation fun, interactive, and collaborative. While professional tools focus on precision and polish, JamCraft is all about creativity and the joy of collaboration. We’re targeting anyone who loves playing with sound. Whether you want to experiment, share a laugh with friends while creating silly beats, or just spend an afternoon exploring what’s possible with samples, JamCraft is here for you. The business domain centers around casual, accessible music creation. Unlike complex music software, JamCraft doesn’t require prior knowledge of music theory or sound design. It’s a virtual playground where everyone can contribute their idea.
 
 ## **Description of the Application**
 
-JamCraft is built to push the boundaries of real-time collaboration using gRPC technology. Its core concept revolves around enabling users to upload sound samples into a global library, arrange them on stacked timelines, and edit them with basic tools. All interactions happen in real-time, ensuring users see updates and actions from others instantly.
+JamCraft combines sound samples, collaborative editing, and real-time interaction into a single shared environment. Here’s the gist: users upload or choose samples from a global library, arrange them on shared tracks, and edit them together. Everything happens live, so when one user moves a sample or adds a beat, everyone else sees it instantly.
 
 The application focuses on responsiveness. Users can interact with stacked tracks, making edits such as trimming, moving, or deleting samples. Each user's cursor is tracked and displayed, offering intuitive collaboration. JamCraft is designed for a single shared session, making it easy for all users to jump in, pick a name, and start creating music together.
 
 ### **Technology Stack**
 
 - **Backend:** Built with Quarkus and written in Java 21. It uses gRPC for real-time communication and PostgreSQL as the relational database.
-- **Frontend:** A modern, web-based interface built using gRPC-web.
+- **Frontend:** A web-based interface using gRPC-web.
 - **Database:** PostgreSQL is used to manage metadata (user data, sample details, timeline configuration), while the actual samples are stored in the server filesystem.
-- **Deployment:** The backend is containerized using **Docker** for consistent and portable deployment.
+- **Deployment:** The backend is containerized using Docker for consistent and portable deployment.
 
 ### **Why gRPC?**
 
@@ -23,34 +27,41 @@ gRPC is designed for fast communication and offers advanced bidirectional stream
 
 Here’s what we’ll explore with gRPC:
 
-- **Bidirectional Streaming:** Both clients and the server will continuously send and receive updates, making collaboration instant.
-- **Concurrent Streams:** Multiple users will connect simultaneously, testing how gRPC handles the load.
-- **High Throughput:** We’ll push thousands of operations per second to measure latency and see how far we can go.
-- **Protobuf Flexibility:** As we evolve our features, we’ll test how easy it is to add fields without breaking existing functionality.
-- **Security:** We'll implement encryption (TLS/SSL) and explore token-based authentication for user sessions.
+- Bidirectional Streaming: Real-time collaboration is all about instant feedback. With gRPC, changes like moving a sample or editing a timeline are streamed directly to all connected clients.
+- Concurrent Streams: Multiple users will connect simultaneously, testing how gRPC handles the load.
+- High Throughput**:** We’ll push thousands of operations per second to measure latency and see how far we can go.
+- Protobuf Flexibility: As we evolve our features, we’ll test how easy it is to add fields without breaking existing functionality.
+- Security**:** We'll implement encryption (TLS/SSL) and explore token-based authentication for user sessions.
 
 ## **Features**
 
 ### **User Stories**
 
-1. As a user, I want to upload sound samples to a global library so that everyone can use them.
-2. As a user, I want to browse the global library to find samples to add to the project.
-3. As a user, I want to arrange sound samples on shared timelines so that I can create music with others.
-4. As a user, I want to cut and edit sound samples on the timeline so that I can make fine adjustments.
-5. As a user, I want to see other users’ mouse cursors moving in real time so that I know who’s doing what.
-6. As a user, I want to join a shared session after choosing my username so that I can contribute.
-7. As a user, I want to delete or move samples on the timeline so that I can adjust the arrangement.
-8. As a user, I want the application to save the project state so that I don’t lose my work if I disconnect.
+1. As a user, I want to upload my own sound samples to a global library so that others can use them.
+2. As a user, I want to browse and search the global library to find samples I can use in the project.
+3. As a user, I want to arrange sound samples on shared timelines to create collaborative music.
+4. As a user, I want to trim, cut, and move sound samples so that I can customize the arrangement.
+5. As a user, I want to see other users’ mouse cursors in real time so that I know who’s interacting with what.
+6. As a user, I want to join the session by choosing a username so that I can participate.
+7. As a user, I want to delete or modify samples on any track so that I can fix mistakes.
+8. As a user, I want the app to save the current project state so that progress isn’t lost if I disconnect.
 
-### **Application Features**
+### Core Features
 
- The main feature is the shared timeline, where everyone sees the same project and can make changes in real time. Each user’s mouse cursor is tracked and displayed, making collaboration more intuitive. There will also be basic editing tools for trimming and splitting samples.
-
-The application is designed for one shared session where everyone connects together. This keeps it simple while focusing on the real-time aspect of collaboration. Users choose a name before joining, making the session personal and easy to identify who’s working on what.
+* A shared repository where users can upload and browse sound samples. Preloaded samples make it easy to get started.
+* Tracks are shared, and updates are synchronized live using gRPC.
+* Users can move, trim, and delete samples to refine their tracks.
+* See everyone’s cursor in real time to enhance collaboration.
+* Playful Simplicity: JamCraft is a sandbox, not a studio. It’s about fun, not perfection.
 
 ### **Nice to Haves**
 
-If time permits, we’d like to add features like user-specific permissions (e.g., locking tracks so only some users can edit them), advanced editing tools like fade-in/out, and the ability to save multiple sessions or projects. Another cool feature could be live audio chat, but that’s a stretch goal.
+If time allows, we’d love to explore:
+
+- Advanced editing tools like fade-ins, effects, or reverse playback.
+- User-specific permissions (e.g., locking a timeline track).
+- Support for multiple sessions and the ability to export finished projects.
+- Live chat.
 
 ## **Architecture**
 
