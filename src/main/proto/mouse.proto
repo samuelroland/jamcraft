@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "amt";
+
+package mouse;
+
+service MouseService {
+  // Bidirectional streaming: real-time exchange of positions
+  rpc RealTimeMouseSync (stream MousePosition) returns (stream MousePosition);
+}
+
+message MousePosition {
+  uint32 userId = 1;
+  uint32 x = 2;
+  uint32 y = 3;
+}
