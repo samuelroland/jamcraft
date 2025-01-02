@@ -2,8 +2,29 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import {GrpcWebFetchTransport} from "@protobuf-ts/grpcweb-transport"
+import {HelloGrpcClient} from "./hello.client"
 
 function App() {
+    const transport = new GrpcWebFetchTransport({
+        baseUrl: "http://localhost:8081",
+        format: "binary"
+    });
+    const client = new HelloGrpcClient(transport)
+    const call = client.sayHello({
+        name:"Jarod"
+    })
+    const headers = call.headers;
+    console.log("got response headers: ", headers)
+
+    const response = call.response;
+    console.log("got response message: ", response)
+
+    const status = call.status;
+    console.log("got status: ", status)
+
+    const trailers = call.trailers;
+    console.log("got trailers: ", trailers)
   const [count, setCount] = useState(0)
 
   return (
