@@ -6,12 +6,14 @@ option java_package = "amt";
 package mouse;
 
 service MouseService {
-  // Bidirectional streaming: real-time exchange of positions
-  rpc RealTimeMouseSync (stream MousePosition) returns (stream MousePosition);
+    // Server-side streaming to broadcast mouse positions to all clients
+    rpc GetMouseUpdates(google.protobuf.Empty) returns (stream MousePosition);
+    // Unary sending to let clients send their mouse positions when they move
+    rpc SentMousePosition(MousePosition) returns (google.protobuf.Empty);
 }
 
 message MousePosition {
-  uint32 userId = 1;
-  uint32 x = 2;
-  uint32 y = 3;
+    uint32 userId = 1;
+    uint32 x = 2;
+    uint32 y = 3;
 }
