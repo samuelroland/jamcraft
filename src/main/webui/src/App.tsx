@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
-import { HelloGrpcClient } from './hello.client'
 import { MouseServiceClient } from './mouse.client'
-import Test from './Test'
-const PROXY_BASE_URL = 'http://localhost:8081'
-const MIN_MOUSE_MSG = 300 // 300 ms -> 3 times/second
-// TODO: we should increase this number if the performance cost is acceptable
+import { MousePosition } from './mouse'
+import MouseCursor from './components/MouseCursor'
+import { MIN_MOUSE_MSG_INTERVAL, PROXY_BASE_URL } from './constants'
 
 function App() {
   const transport = new GrpcWebFetchTransport({
@@ -15,6 +13,8 @@ function App() {
   })
 
   const mouseClient = new MouseServiceClient(transport)
+  const [userId, setUserId] = useState(Math.floor(Math.random() * 1000)) // random one for now
+  const [otherMouses, setOtherMouses] = useState<MousePosition[]>([])
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   // With the help of Copilot, I found that this copy is absolutely necessary
@@ -29,8 +29,21 @@ function App() {
     latestMousePosition.current = newPosition // this copy is important
   }
 
+  const handleUpdatedMousesPositions = (p: MousePosition) => {
+    console.log('Got new position', p)
+    setOtherMouses((ms) => {
+      const found = ms.find((p2) => p2.userId == p.userId)
+      if (found) {
+        // complex way proposed by Copilot to update the list
+        return ms.map((p2) => (p2.userId === p.userId ? { ...p2, x: p.x, y: p.y } : p2))
+      } else {
+        return [...ms, p] // just a push back...
+      }
+    })
+  }
+
   useEffect(() => {
-    mouseClient.getMouseUpdates({}).responses.onMessage((e) => console.log('Got new mouse position', e))
+    mouseClient.getMouseUpdates({}).responses.onMessage((p) => handleUpdatedMousesPositions(p))
 
     addEventListener('mousemove', onMouseMove)
 
@@ -42,21 +55,36 @@ function App() {
       if (currentX !== previousX || currentY !== previousY) {
         previousMousePosition.current = { x: currentX, y: currentY }
         console.log('Sent mouse position at ', latestMousePosition.current)
-        mouseClient.sendMousePosition({ userId: 12, x: currentX, y: currentY })
+        mouseClient.sendMousePosition({ userId: userId, x: currentX, y: currentY })
       }
-    }, MIN_MOUSE_MSG)
+    }, MIN_MOUSE_MSG_INTERVAL)
 
     return () => {
       clearInterval(intervalId)
       removeEventListener('mousemove', onMouseMove)
     }
-  }, [])
+  }, []) // run this only once, not on every render
 
   return (
     <>
       <h1>POC mouses</h1>
-      Mouse position {mousePosition.x} {mousePosition.y} <br />
+      <h3>Client ID {userId}</h3>
+      Mouse position {latestMousePosition.current.x} {latestMousePosition.current.y} <br />
       Sent position {previousMousePosition.current.x} {previousMousePosition.current.y}
+      <br />
+      <h2>Stored mouse positions</h2>
+      <ul>
+        {otherMouses.map((p) => (
+          <li key={p.userId}>
+            userId: {p.userId}, x: {p.x}, y: {p.y}
+          </li>
+        ))}
+      </ul>
+      <ul>
+        {otherMouses.map((p) => (
+          <MouseCursor key={p.userId} p={p}></MouseCursor>
+        ))}
+      </ul>
     </>
   )
 }
