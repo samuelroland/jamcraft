@@ -1,4 +1,4 @@
-import { MousePosition } from './mouse'
+import { MousePosition } from '../grpc/mouse'
 
 function MouseCursor({ p }: { p: MousePosition }) {
   // TODO: replace with a better icon and show the user name instead of userId

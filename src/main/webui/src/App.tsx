@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
-import { MouseServiceClient } from './mouse.client'
-import { MousePosition } from './mouse'
+import { MouseServiceClient } from './grpc/mouse.client'
+import { MousePosition } from './grpc/mouse'
 import MouseCursor from './components/MouseCursor'
 import { MIN_MOUSE_MSG_INTERVAL, PROXY_BASE_URL } from './constants'
 
