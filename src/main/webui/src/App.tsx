@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState ,useMemo} from 'react'
 import './App.css'
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
 import { MouseServiceClient } from './grpc/mouse.client'
@@ -7,12 +7,14 @@ import MouseCursor from './components/MouseCursor'
 import { MIN_MOUSE_MSG_INTERVAL, PROXY_BASE_URL } from './constants'
 
 function App() {
-  const transport = new GrpcWebFetchTransport({
+ const transport = useMemo(() => new GrpcWebFetchTransport({
     baseUrl: PROXY_BASE_URL,
     format: 'binary',
-  })
+  }), [])
 
-  const mouseClient = new MouseServiceClient(transport)
+  const mouseClient = useMemo(() => new MouseServiceClient(transport), [transport])
+
+
   const [userId, setUserId] = useState(Math.floor(Math.random() * 1000)) // random one for now
   const [otherMouses, setOtherMouses] = useState<Map<number, MousePosition>>(new Map())
 
@@ -34,7 +36,12 @@ function App() {
     if(p.userId == userId){
         return
     }
-    setOtherMouses((ms) => new Map(ms).set(p.userId, p))
+     setOtherMouses((ms) => {
+        // Create a new Map to maintain immutability
+        const newMap = new Map(ms)
+        newMap.set(p.userId, p)
+        return newMap
+      })
 
   }
 
