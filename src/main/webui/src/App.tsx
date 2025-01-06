@@ -14,7 +14,7 @@ function App() {
 
   const mouseClient = new MouseServiceClient(transport)
   const [userId, setUserId] = useState(Math.floor(Math.random() * 1000)) // random one for now
-  const [otherMouses, setOtherMouses] = useState<MousePosition[]>([])
+  const [otherMouses, setOtherMouses] = useState<Map<number, MousePosition>>(new Map())
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   // With the help of Copilot, I found that this copy is absolutely necessary
@@ -31,15 +31,11 @@ function App() {
 
   const handleUpdatedMousesPositions = (p: MousePosition) => {
     console.log('Got new position', p)
-    setOtherMouses((ms) => {
-      const found = ms.find((p2) => p2.userId == p.userId)
-      if (found) {
-        // complex way proposed by Copilot to update the list
-        return ms.map((p2) => (p2.userId === p.userId ? { ...p2, x: p.x, y: p.y } : p2))
-      } else {
-        return [...ms, p] // just a push back...
-      }
-    })
+    if(p.userId == userId){
+        return
+    }
+    setOtherMouses((ms) => new Map(ms).set(p.userId, p))
+
   }
 
   useEffect(() => {
@@ -74,14 +70,14 @@ function App() {
       <br />
       <h2>Stored mouse positions</h2>
       <ul>
-        {otherMouses.map((p) => (
+         {Array.from(otherMouses.values()).map((p) => (
           <li key={p.userId}>
             userId: {p.userId}, x: {p.x}, y: {p.y}
           </li>
         ))}
       </ul>
       <ul>
-        {otherMouses.map((p) => (
+        {Array.from(otherMouses.values()).map((p) => (
           <MouseCursor key={p.userId} p={p}></MouseCursor>
         ))}
       </ul>
