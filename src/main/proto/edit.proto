@@ -1,0 +1,31 @@
+// Methods for live edition of samples and tracks
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option java_multiple_files = true;
+option java_package = "amt";
+
+package edit;
+
+service EditService {
+    // Server-side streaming to broadcast positions of samples changed by others
+    rpc GetSamplesPositions(google.protobuf.Empty) returns (stream SamplePosition);
+    // Unary sending to let clients change position of samples
+    rpc ChangeSamplePosition(SamplePosition) returns (google.protobuf.Empty);
+
+    // Server-side streaming to broadcast updated tracks, it allows to update track names in live
+    rpc GetUpdatedTracks(google.protobuf.Empty) returns (stream UpdatedTrack);
+    // Unary sending to update track name
+    rpc ChangeTrackInfo(UpdatedTrack) returns (google.protobuf.Empty);
+}
+
+message SamplePosition {
+    uint64 sampleId = 1;
+    uint64 startTime = 2;
+}
+
+message UpdatedTrack {
+    uint64 trackId = 1;
+    string name = 2;
+}
