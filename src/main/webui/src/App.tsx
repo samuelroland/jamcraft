@@ -4,6 +4,7 @@ import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
 import { MouseServiceClient } from './grpc/mouse.client'
 import { MousePosition } from './grpc/mouse'
 import MouseCursor from './components/MouseCursor'
+import TrackList from './components/TrackList'
 import { MIN_MOUSE_MSG_INTERVAL, PROXY_BASE_URL } from './constants'
 
 function App() {
@@ -88,6 +89,7 @@ function App() {
           <MouseCursor key={p.userId} p={p}></MouseCursor>
         ))}
       </ul>
+        <TrackList></TrackList>
     </>
   )
 }
