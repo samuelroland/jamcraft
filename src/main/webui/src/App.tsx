@@ -16,7 +16,7 @@ function App() {
   const mouseClient = useMemo(() => new MouseServiceClient(transport), [transport])
 
 
-  const [userId, setUserId] = useState(Math.floor(Math.random() * 1000)) // random one for now
+  const [userId] = useState(Math.floor(Math.random() * 1000)) // random one for now
   const [otherMouses, setOtherMouses] = useState<Map<number, MousePosition>>(new Map())
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
