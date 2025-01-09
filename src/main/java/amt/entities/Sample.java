@@ -19,11 +19,7 @@ public class Sample {
     private String filepath;
 
     @Column(nullable = false)
-    private Double duration;
-
-    @ManyToOne
-    @JoinColumn(name = "uploaded_by")
-    private User uploadedBy;
+    private Double duration; // in seconds
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -47,14 +43,6 @@ public class Sample {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public User getUploadedBy() {
-        return uploadedBy;
-    }
-
-    public void setUploadedBy(User uploadedBy) {
-        this.uploadedBy = uploadedBy;
     }
 
     public Double getDuration() {
