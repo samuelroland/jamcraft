@@ -13,10 +13,11 @@ public class SampleRepository extends BaseRepository<Sample, Long> {
         super(Sample.class);
     }
 
-    public List<Sample> searchByName(String name){
-      // TODO
-        List<Sample> list = new ArrayList<>();
-        list.add(new Sample());
-        return list;
+    public List<Sample> searchByName(String name) {
+        String query = "SELECT s FROM Sample s WHERE LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%'))";
+        return entityManager.createQuery(query, Sample.class)
+                .setParameter("name", name)
+                .getResultList();
     }
+
 }
