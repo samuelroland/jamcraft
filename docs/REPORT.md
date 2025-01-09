@@ -1,4 +1,4 @@
-# **JamCraft**
+# JamCraft
 
 **Authors:** Yanis Ouadahi, Samuel Roland, Jarod Streckeisen, Timothée Van Hove
 
