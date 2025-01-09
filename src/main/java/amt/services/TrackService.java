@@ -31,8 +31,6 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
         Track track = new Track();
         track.setId(trackDTO.id());
         track.setName(trackDTO.name());
-        track.setCreatedAt(trackDTO.createdAt());
-        track.setModifiedAt(trackDTO.modifiedAt());
 
         // Convert samples in the DTO to SampleTrack entities
         List<SampleTrack> sampleTracks = trackDTO.samples().stream().map(sampleInTrackDTO -> {
@@ -108,7 +106,6 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
     public void removeSampleFromTrack(Long trackId, Long sampleId) {
         SampleTrack sampleTrack = sampleTrackRepository.findByTrackIdAndSampleId(trackId, sampleId)
                 .orElseThrow(() -> new IllegalArgumentException("SampleTrack not found"));
-
         sampleTrackRepository.deleteById(sampleTrack.getId());
     }
 }

@@ -22,7 +22,6 @@ public class SampleService implements DtoConverter<Sample, SampleDTO> {
         sample.setName(dto.name());
         sample.setFilepath(dto.filepath());
         sample.setDuration(dto.duration());
-        sample.setCreatedAt(dto.createdAt());
         return sample;
     }
 

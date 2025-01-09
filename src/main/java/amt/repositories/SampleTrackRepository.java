@@ -20,5 +20,4 @@ public class SampleTrackRepository extends BaseRepository<SampleTrack, Long> {
                 .getResultStream()
                 .findFirst();
     }
-
 }

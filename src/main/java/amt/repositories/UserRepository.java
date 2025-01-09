@@ -27,5 +27,4 @@ public class UserRepository extends BaseRepository<User, Long> {
                 .getSingleResult();
         return count > 0;
     }
-
 }

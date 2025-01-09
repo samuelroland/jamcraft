@@ -19,5 +19,4 @@ public class SampleRepository extends BaseRepository<Sample, Long> {
                 .setParameter("name", name)
                 .getResultList();
     }
-
 }
