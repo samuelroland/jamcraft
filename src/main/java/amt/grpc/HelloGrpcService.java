@@ -1,5 +1,8 @@
-package amt;
+package amt.grpc;
 
+import amt.HelloGrpc;
+import amt.HelloReply;
+import amt.HelloRequest;
 import io.quarkus.grpc.GrpcService;
 
 import io.smallrye.mutiny.Uni;

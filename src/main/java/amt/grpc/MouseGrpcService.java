@@ -1,4 +1,4 @@
-package amt.services;
+package amt.grpc;
 
 import amt.MousePosition;
 import amt.MouseService;
