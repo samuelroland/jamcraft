@@ -47,8 +47,8 @@ public class SampleService implements DtoConverter<Sample, SampleDTO> {
     }
 
     @Transactional
-    public void saveSample(SampleDTO sampleDTO) {
-        sampleRepository.save(fromDTO(sampleDTO));
+    public SampleDTO saveSample(SampleDTO sampleDTO) {
+        return toDTO(sampleRepository.save(fromDTO(sampleDTO)));
     }
 
     @Transactional
