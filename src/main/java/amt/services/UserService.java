@@ -6,6 +6,7 @@ import amt.entities.User;
 import amt.repositories.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 
@@ -37,13 +38,15 @@ public class UserService implements DtoConverter<User, UserDTO> {
                 new IllegalArgumentException("User not found"));
     }
 
-    public void saveUser(UserDTO user) {
+    @Transactional
+    public UserDTO saveUser(UserDTO user) {
         if (user == null) {
             throw new IllegalArgumentException("User not found");
         }
-        userRepository.save(fromDTO(user));
+        return toDTO(userRepository.save(fromDTO(user)));
     }
 
+    @Transactional
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }

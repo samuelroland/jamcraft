@@ -11,6 +11,7 @@ import amt.repositories.SampleTrackRepository;
 import amt.repositories.TrackRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 
@@ -81,14 +82,17 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
                 new IllegalArgumentException("Track not found"));
     }
 
+    @Transactional
     public void saveTrack(TrackDTO trackDTO) {
         trackRepository.save(fromDTO(trackDTO));
     }
 
+    @Transactional
     public void deleteTrack(Long id) {
         trackRepository.deleteById(id);
     }
 
+    @Transactional
     public void addSampleToTrack(Long trackId, Long sampleId, Double startTime) {
         Track track = trackRepository.findById(trackId)
                 .orElseThrow(() -> new IllegalArgumentException("Track not found"));
@@ -103,6 +107,7 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
         sampleTrackRepository.save(sampleTrack);
     }
 
+    @Transactional
     public void removeSampleFromTrack(Long trackId, Long sampleId) {
         SampleTrack sampleTrack = sampleTrackRepository.findByTrackIdAndSampleId(trackId, sampleId)
                 .orElseThrow(() -> new IllegalArgumentException("SampleTrack not found"));
