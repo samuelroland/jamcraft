@@ -6,6 +6,7 @@ import amt.entities.Sample;
 import amt.repositories.SampleRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 
@@ -45,10 +46,12 @@ public class SampleService implements DtoConverter<Sample, SampleDTO> {
                 new IllegalArgumentException("Sample not found"));
     }
 
-    public void saveSample(SampleDTO sampleDTO) {
-        sampleRepository.save(fromDTO(sampleDTO));
+    @Transactional
+    public SampleDTO saveSample(SampleDTO sampleDTO) {
+        return toDTO(sampleRepository.save(fromDTO(sampleDTO)));
     }
 
+    @Transactional
     public void deleteSample(Long id) {
         sampleRepository.deleteById(id);
     }

@@ -24,3 +24,6 @@ INSERT INTO sample_tracks (track_id, sample_id, start_time) VALUES
 (3, 2, 10.1),
 (4, 3, 0);
 
+INSERT INTO users (name, created_at) VALUES
+('Spy', CURRENT_TIMESTAMP);
+
