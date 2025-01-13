@@ -1,6 +1,7 @@
 // Core types from the Rest endpoints
 // Other types will come from GRPC generated code
 
+// TODO: should we use this User type or GRPC duplication ?
 export type User = {
   id: number
   name: string
@@ -18,6 +19,7 @@ export type Sample = {
 // A sample in a given track have the additionnal info of startTime
 export interface SampleInTrack extends Sample {
   startTime: number // in seconds
+  instanceId: number // sample instance (sample_tracks.id not samples.id)
 }
 
 export type Track = {
