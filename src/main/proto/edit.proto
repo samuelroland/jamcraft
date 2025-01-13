@@ -10,20 +10,38 @@ package edit;
 
 service EditService {
     // Server-side streaming to broadcast positions of samples changed by others
-    rpc GetSamplesPositions(google.protobuf.Empty) returns (stream SamplePosition);
+    rpc GetSamplePositions(google.protobuf.Empty) returns (stream SamplePosition);
     // Unary sending to let clients change position of samples
     rpc ChangeSamplePosition(SamplePosition) returns (google.protobuf.Empty);
+    // Unary sending to let clients remove a sample from the project, giving the samples_tracks.id !
+    rpc RemoveSample(SampleInstanceId) returns (google.protobuf.Empty);
 
     // Server-side streaming to broadcast updated tracks, it allows to update track names in live
     rpc GetUpdatedTracks(google.protobuf.Empty) returns (stream TrackInfo);
     // Unary sending to update track info or create one
     rpc ChangeTrackInfo(TrackInfo) returns (google.protobuf.Empty);
+
+    // Server-side streaming to broadcast new sample uploads, useful to update the local library
+    rpc GetSampleUploads(google.protobuf.Empty) returns (stream SampleInfo);
+}
+
+message SampleInstanceId {
+    uint64 instanceId = 1;// sample_tracks.id !
+}
+
+message SampleInfo {
+    uint64 id = 1;// samples.id
+    string name = 2;
+    string filepath = 3;
+    double duration = 4;
+    string createdAt = 5;
 }
 
 message SamplePosition {
-    uint64 sampleId = 1;
-    uint64 startTime = 2;
-    uint64 trackId = 3;
+    uint64 id = 1;        // samples.id
+    uint64 instanceId = 2;// sample_tracks.id !
+    uint64 startTime = 3;
+    uint64 trackId = 4;
 }
 
 message TrackInfo {

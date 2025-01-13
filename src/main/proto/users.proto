@@ -9,22 +9,35 @@ package mouse;
 
 service UsersService {
     // Unary sending to as a client to join the project with a name and get back a list of existing users (including itself)
-    rpc Join(UserName) returns (repeated User);
+    rpc Join(UserName) returns (UsersList);
     // Server-side streaming to broadcast users joining or leaving
     rpc GetUsersEvents(google.protobuf.Empty) returns (stream UserChange);
+    // TODO: do we need to have a Leave() method ? We hope to be able to detect disconnect from the server when
+    // they disconnect from stream returned by GetUsersEvents()
 }
 
 message UserName {
     string name = 1;
 }
 
-enum Action {
-  JOIN = 0;
-  LEAVE = 1;
+message UsersList {
+    repeated User users = 1;
+}
+
+message User {
+    uint64 id = 1;
+    string name = 2;
+    string createdAt = 3;// TODO: should we use timestamp time instead ? https://protobuf.dev/best-practices/dos-donts/#well-known-common
+}
+
+enum SessionAction {
+    ACTION_UNSPECIFIED = 0;
+    JOIN = 1;
+    LEAVE = 2;
 }
 
 message UserChange {
-    Action action = 1
-    uint32 userId = 2;
-    string name = 3
+    SessionAction action = 1;
+    uint64 userId = 2;
+    string name = 3;
 }
