@@ -1,4 +1,5 @@
 syntax = "proto3";
+// TODO: delete this at end of the project, and associated service
 
 option java_multiple_files = true;
 option java_package = "amt";
@@ -7,7 +8,7 @@ option java_outer_classname = "HelloGrpcProto";
 package hello;
 
 service HelloGrpc {
-    rpc SayHello (HelloRequest) returns (HelloReply) {}
+    rpc SayHello(HelloRequest) returns (HelloReply) {}
 }
 
 message HelloRequest {
