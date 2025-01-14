@@ -1,4 +1,4 @@
-package amt.resources;
+package amt.rest;
 
 import amt.jms.NotificationConsumer;
 import jakarta.inject.Inject;

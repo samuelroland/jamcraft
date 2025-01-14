@@ -1,4 +1,4 @@
-package amt.resources;
+package amt.rest;
 
 public class TrackResource {
 }
