@@ -6,6 +6,7 @@ import { MousePosition } from './grpc/mouse'
 import MouseCursor from './components/MouseCursor'
 import TrackList from './components/TrackList'
 import { MIN_MOUSE_MSG_INTERVAL, PROXY_BASE_URL } from './constants'
+import Library from './components/Library'
 
 function App() {
  const transport = useMemo(() => new GrpcWebFetchTransport({
@@ -69,28 +70,45 @@ function App() {
     }
   }, []) // run this only once, not on every render
 
+  const [tracks, setTracks] = useState<{ id: number; name: string }[]>([]);
+
+   const handleDropSample = (sample: { id: number; name: string }) => {
+    setTracks((prev) => [...prev, sample]);
+  };
+
   return (
-    <>
-      <h1>POC mouses</h1>
-      <h3>Client ID {userId}</h3>
-      Mouse position {latestMousePosition.current.x} {latestMousePosition.current.y} <br />
-      Sent position {previousMousePosition.current.x} {previousMousePosition.current.y}
-      <br />
-      <h2>Stored mouse positions</h2>
-      <ul>
-         {Array.from(otherMouses.values()).map((p) => (
-          <li key={p.userId}>
-            userId: {p.userId}, x: {p.x}, y: {p.y}
-          </li>
-        ))}
-      </ul>
-      <ul>
-        {Array.from(otherMouses.values()).map((p) => (
-          <MouseCursor key={p.userId} p={p}></MouseCursor>
-        ))}
-      </ul>
-        <TrackList></TrackList>
-    </>
+      <>
+          {/* <h1>POC mouses</h1>*/}
+          {/*<h3>Client ID {userId}</h3>*/}
+          {/*Mouse position {latestMousePosition.current.x} {latestMousePosition.current.y} <br/>*/}
+          {/*Sent position {previousMousePosition.current.x} {previousMousePosition.current.y}*/}
+          {/*<br/>*/}
+          {/*<h2>Stored mouse positions</h2>*/}
+          {/*<ul>*/}
+          {/*    {Array.from(otherMouses.values()).map((p) => (*/}
+          {/*        <li key={p.userId}>*/}
+          {/*            userId: {p.userId}, x: {p.x}, y: {p.y}*/}
+          {/*        </li>*/}
+          {/*    ))}*/}
+          {/*</ul>*/}
+          {/*<ul>*/}
+          {/*    {Array.from(otherMouses.values()).map((p) => (*/}
+          {/*        <MouseCursor key={p.userId} p={p}></MouseCursor>*/}
+          {/*    ))}*/}
+          {/*</ul> */}
+
+          <div className="flex h-screen">
+              {/* Library on the left */}
+              <div className="w-1/4 h-full bg-gray-100 p-4 relative">
+                  <Library/>
+              </div>
+
+              {/* TrackList on the right */}
+              <div className="ml-1/4 w-3/4 p-6">
+                  <TrackList/>
+              </div>
+          </div>
+      </>
   )
 }
 
