@@ -1,4 +1,4 @@
-package amt.resources;
+package amt.rest;
 
 import amt.dto.UserDTO;
 import amt.jms.NotificationProducer;

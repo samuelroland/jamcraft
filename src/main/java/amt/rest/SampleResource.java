@@ -1,9 +1,6 @@
-package amt.resources;
+package amt.rest;
 
-import amt.dto.SampleDTO;
-import amt.dto.UserDTO;
 import amt.services.SampleService;
-import amt.services.UserService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
