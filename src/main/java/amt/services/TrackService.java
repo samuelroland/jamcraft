@@ -56,6 +56,7 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
             Sample sample = sampleTrack.getSample();
             return new SampleInTrackDTO(
                     sample.getId(),
+                    sampleTrack.getId(),
                     sample.getName(),
                     sample.getFilepath(),
                     sample.getDuration(),
@@ -75,6 +76,10 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
 
     public List<TrackDTO> getAllTracks() {
         return trackRepository.findAll().stream().map(this::toDTO).toList();
+    }
+
+    public List<TrackDTO> getAllTracksWithSamples() {
+        return trackRepository.findAllWithSamplesLoaded().stream().map(this::toDTO).toList();
     }
 
     public TrackDTO getTrackById(Long id) {
@@ -114,4 +119,3 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
         sampleTrackRepository.deleteById(sampleTrack.getId());
     }
 }
-
