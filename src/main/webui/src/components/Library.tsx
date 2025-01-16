@@ -1,10 +1,14 @@
 import SampleItem from './SampleItem.tsx';
 import { Sample } from "../../types.ts";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function Library() {
+    const [currentTime, setCurrentTime] = useState<number>(0);
     const [samples, setSamples] = useState<Sample[]>([]);
+    const [isPlaying, setIsPlaying] = useState<boolean[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
         // Call API to retrieves sampels
@@ -23,6 +27,31 @@ function Library() {
     // Tableau de couleurs définies
     const colors = ['#e83f3f', '#23852f', '#3b70be', '#e57c2f', '#5c218a'];
 
+    const togglePlay = (index: number) => {
+        const sample = samples[index];
+
+        // Create audio element if not exists
+        if (!audioRef.current || !isPlaying[index]) {
+            if (audioRef.current)
+                audioRef.current.pause()
+
+            audioRef.current = new Audio("/audio/" + sample.filepath)
+        }
+
+        // Play from current time
+        audioRef.current.currentTime = currentTime
+
+        if (isPlaying[index]) {
+            audioRef.current.pause()
+            setIsPlaying({ ...isPlaying, [index]: false })
+        } else {
+            // Set isPlaying to true for the current sample
+            const newIsPlaying = new Array(samples.length).fill(false)
+            newIsPlaying[index] = true
+            audioRef.current.play().then(() => setIsPlaying(newIsPlaying))
+        }
+    }
+
     if (loading)
         return <div>Loading samples...</div>;
 
@@ -33,7 +62,8 @@ function Library() {
                 {samples.map((sample, index) => {
                     // Assign a color to each sample, modulo the number of colors
                     const color = colors[index % colors.length];
-                    return <SampleItem key={sample.id} sample={sample} color={color}/>;
+                    return <SampleItem key={sample.id} sample={sample} color={color}
+                                       togglePlayCallback={() => togglePlay(index)}/>;
                 })}
             </div>
         </div>
