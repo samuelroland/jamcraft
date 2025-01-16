@@ -1,6 +1,7 @@
 package amt.grpc;
 
 import amt.*;
+import amt.dto.TrackDTO;
 import amt.services.SampleService;
 import amt.services.SampleTrackService;
 import amt.services.TrackService;
@@ -58,9 +59,11 @@ public class EditGrpcService implements EditService {
     }
 
     // Handle incoming requests to update track info
+    // Test command: grpcurl -plaintext -d '{\"trackId\": 3, \"name\": \"Drums\"}' localhost:9000 edit.EditService/ChangeTrackInfo
+    @RunOnVirtualThread
     @Override
     public Uni<Empty> changeTrackInfo(TrackInfo request) {
-        // Notify all subscribers of the updated track info
+        trackService.updateTrackName(request.getTrackId(), request.getName());
         trackInfoEmitters.forEach(emitter -> emitter.emit(request));
 
         // Return a successful response
@@ -68,6 +71,7 @@ public class EditGrpcService implements EditService {
     }
 
     // Stream sample positions to clients
+    // Test command: grpcurl -plaintext localhost:9000 edit.EditService/GetSamplePositions
     @Override
     public Multi<SamplePosition> getSamplePositions(Empty request) {
         return Multi.createFrom().emitter(emitter -> {
@@ -77,6 +81,7 @@ public class EditGrpcService implements EditService {
     }
 
     // Stream updated track info to clients
+    // Test command: grpcurl -plaintext localhost:9000 edit.EditService/GetUpdatedTracks
     @Override
     public Multi<TrackInfo> getUpdatedTracks(Empty request) {
         return Multi.createFrom().emitter(emitter -> {

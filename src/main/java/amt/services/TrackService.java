@@ -84,6 +84,15 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
     }
 
     @Transactional
+    public void updateTrackName(Long trackId, String newName) {
+        Track track = trackRepository.findById(trackId)
+                .orElseThrow(() -> new IllegalArgumentException("Track not found with ID: " + trackId));
+
+        track.setName(newName);
+        trackRepository.save(track);
+    }
+
+    @Transactional
     public void saveTrack(TrackDTO trackDTO) {
         trackRepository.save(fromDTO(trackDTO));
     }
