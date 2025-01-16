@@ -1,9 +1,21 @@
 import TrackItem from "./TrackItem.tsx"
 import { SampleInTrack, Track } from "./../../types.ts"
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { EditServiceClient } from "../grpc/edit.client.ts";
+import { GrpcWebFetchTransport } from "@protobuf-ts/grpcweb-transport";
+import { PROXY_BASE_URL } from "../constants.ts";
 
 function TrackList() {
     const [tracks, setTracks] = useState<Track[]>([]);
+
+    const transport = useMemo(() => new GrpcWebFetchTransport({
+        baseUrl: PROXY_BASE_URL,
+        format: 'binary',
+    }), [])
+    // @ts-ignore
+    const editClient = useMemo(() => new EditServiceClient(transport), [transport])
+    // editClient.changeSamplePosition({})
+    // editClient.getSamplePositions({}).responses
 
     useEffect(() => {
         fetch('/tracks')
@@ -40,6 +52,7 @@ function TrackList() {
         e.preventDefault(); // Required for allowing drop
     }
 
+    // @ts-ignore
     // Calculer la durée maximale parmi toutes les tracks
     const maxDuration = tracks.reduce((max, track) => {
         const trackDuration = track.samples.reduce((maxSample, sample) => {
@@ -48,6 +61,7 @@ function TrackList() {
         return Math.max(max, trackDuration)
     }, 0)
 
+    // @ts-ignore
     const formatTime = (time: number) => {
         const minutes = Math.floor(time / 60)
         const seconds = Math.floor(time % 60)

@@ -3,11 +3,9 @@ import './App.css'
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
 import { MouseServiceClient } from './grpc/mouse.client'
 import { MousePosition } from './grpc/mouse'
-import MouseCursor from './components/MouseCursor'
 import TrackList from './components/TrackList'
 import { MIN_MOUSE_MSG_INTERVAL, PROXY_BASE_URL } from './constants'
 import Library from './components/Library'
-import { EditServiceClient } from "./grpc/edit.client.ts";
 
 function App() {
     const transport = useMemo(() => new GrpcWebFetchTransport({
@@ -16,11 +14,9 @@ function App() {
     }), [])
 
     const mouseClient = useMemo(() => new MouseServiceClient(transport), [transport])
-    const editClient = useMemo(() => new EditServiceClient(transport), [transport])
-    //   editClient.changeSamplePosition({})
-    // editClient.getSamplePositions({}).responses
 
     const [userId] = useState(Math.floor(Math.random() * 1000)) // random one for now
+    // @ts-ignore
     const [otherMouses, setOtherMouses] = useState<Map<number, MousePosition>>(new Map())
 
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
@@ -72,12 +68,6 @@ function App() {
             removeEventListener('mousemove', onMouseMove)
         }
     }, []) // run this only once, not on every render
-
-    const [tracks, setTracks] = useState<{ id: number; name: string }[]>([]);
-
-    const handleDropSample = (sample: { id: number; name: string }) => {
-        setTracks((prev) => [...prev, sample]);
-    };
 
     return (
         <>
