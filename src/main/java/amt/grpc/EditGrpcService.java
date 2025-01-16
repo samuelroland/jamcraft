@@ -1,47 +1,93 @@
 package amt.grpc;
 
 import amt.*;
+import amt.services.SampleService;
+import amt.services.TrackService;
 import com.google.protobuf.Empty;
 import io.quarkus.grpc.GrpcService;
+import io.smallrye.common.annotation.RunOnVirtualThread;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.subscription.MultiEmitter;
+import jakarta.inject.Inject;
+
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @GrpcService
 public class EditGrpcService implements EditService {
 
-    // Unary sending to let clients change position of samples
+    @Inject
+    SampleService sampleService; // Handles DB operations for samples
+    @Inject
+    TrackService trackService; // Handles DB operations for tracks
+
+    // Active emitters for streaming sample positions
+    private final CopyOnWriteArrayList<MultiEmitter<? super SamplePosition>> samplePositionEmitters = new CopyOnWriteArrayList<>();
+
+    // Active emitters for streaming track info updates
+    private final CopyOnWriteArrayList<MultiEmitter<? super TrackInfo>> trackInfoEmitters = new CopyOnWriteArrayList<>();
+
+    // Active emitters for streaming sample uploads
+    private final CopyOnWriteArrayList<MultiEmitter<? super SampleInfo>> sampleUploadEmitters = new CopyOnWriteArrayList<>();
+
+    // Handle incoming requests to change sample position
+    @RunOnVirtualThread
     @Override
     public Uni<Empty> changeSamplePosition(SamplePosition request) {
-        return null;
+
+        // TODO Update the SampleTrack
+//        var sampleTrack = sampleService.getSampleById(request.getId());
+//        sample.
+//        sampleService.saveSample(sample);
+        // Notify all subscribers of the new sample position
+        samplePositionEmitters.forEach(emitter -> emitter.emit(request));
+
+        // Return a successful response
+        return Uni.createFrom().item(Empty.getDefaultInstance());
     }
 
-    // Unary sending to let clients remove a sample from the project, giving the samples_tracks.id !
+    // Handle incoming requests to remove a sample
     @Override
     public Uni<Empty> removeSample(SampleInstanceId request) {
-        return null;
+        // In a real implementation, handle removal logic here
+        System.out.println("Removing sample with instance ID: " + request.getInstanceId());
+        return Uni.createFrom().item(Empty.getDefaultInstance());
     }
 
-    // Unary sending to update track info or create one
+    // Handle incoming requests to update track info
     @Override
     public Uni<Empty> changeTrackInfo(TrackInfo request) {
-        return null;
+        // Notify all subscribers of the updated track info
+        trackInfoEmitters.forEach(emitter -> emitter.emit(request));
+
+        // Return a successful response
+        return Uni.createFrom().item(Empty.getDefaultInstance());
     }
 
-    // Server-side streaming to broadcast positions of samples changed by others
+    // Stream sample positions to clients
     @Override
     public Multi<SamplePosition> getSamplePositions(Empty request) {
-        return null;
+        return Multi.createFrom().emitter(emitter -> {
+            samplePositionEmitters.add(emitter);
+            emitter.onTermination(() -> samplePositionEmitters.remove(emitter));
+        });
     }
 
-    // Server-side streaming to broadcast updated tracks, it allows to update track names in live
+    // Stream updated track info to clients
     @Override
     public Multi<TrackInfo> getUpdatedTracks(Empty request) {
-        return null;
+        return Multi.createFrom().emitter(emitter -> {
+            trackInfoEmitters.add(emitter);
+            emitter.onTermination(() -> trackInfoEmitters.remove(emitter));
+        });
     }
 
-    // Server-side streaming to broadcast new sample uploads, useful to update the local library
+    // Stream uploaded sample info to clients
     @Override
     public Multi<SampleInfo> getSampleUploads(Empty request) {
-        return null;
+        return Multi.createFrom().emitter(emitter -> {
+            sampleUploadEmitters.add(emitter);
+            emitter.onTermination(() -> sampleUploadEmitters.remove(emitter));
+        });
     }
 }
