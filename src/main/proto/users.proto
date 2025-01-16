@@ -5,7 +5,7 @@ import "google/protobuf/empty.proto";
 option java_multiple_files = true;
 option java_package = "amt";
 
-package mouse;
+package users;
 
 service UsersService {
     // Unary sending to as a client to join the project with a name and get back a list of existing users (including itself)
@@ -27,7 +27,6 @@ message UsersList {
 message User {
     uint64 id = 1;
     string name = 2;
-    string createdAt = 3;// TODO: should we use timestamp time instead ? https://protobuf.dev/best-practices/dos-donts/#well-known-common
 }
 
 enum SessionAction {

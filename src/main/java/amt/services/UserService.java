@@ -43,7 +43,9 @@ public class UserService implements DtoConverter<User, UserDTO> {
         if (user == null) {
             throw new IllegalArgumentException("User not found");
         }
-        return toDTO(userRepository.save(fromDTO(user)));
+        var userDto = toDTO(userRepository.save(fromDTO(user)));
+        System.out.println("New user joined : " + userDto.name());
+        return userDto;
     }
 
     @Transactional
