@@ -36,14 +36,19 @@ public class EditGrpcService implements EditService {
     @Override
     public Uni<Empty> changeSamplePosition(SampleInfo request) {
 
-        // Update the sample position in the database
-        sampleTrackService.updateSampleTrackPosition(request.getInstanceId(), request.getStartTime());
+        try {
+            // Update the sample position in the database
+            sampleTrackService.updateSampleTrackPosition(request.getInstanceId(), request.getStartTime());
 
-        // Notify all connected clients about the update
-        samplePositionEmitters.forEach(emitter -> emitter.emit(request));
+            // Notify all connected clients about the update
+            samplePositionEmitters.forEach(emitter -> emitter.emit(request));
 
-        // Return a successful response
-        return Uni.createFrom().item(Empty.getDefaultInstance());
+            // Return a successful response
+            return Uni.createFrom().item(Empty.getDefaultInstance());
+        } catch (IllegalArgumentException e){
+            System.err.println("Error changing sample position: " + e.getMessage());
+            return Uni.createFrom().failure(e);
+        }
     }
 
     // Handle incoming requests to remove a sample
@@ -55,7 +60,6 @@ public class EditGrpcService implements EditService {
             // Remove the SampleTrack from the database
             var removed = sampleTrackService.removeSampleTrack(request.getInstanceId());
 
-
             // Notify listeners with the removed SampleTrack info
             SampleInfo response = SampleInfo.newBuilder()
                     .setInstanceId(removed.id())
@@ -65,8 +69,6 @@ public class EditGrpcService implements EditService {
                     .build();
 
             sampleRemoveEmitters.forEach(emitter -> emitter.emit(response));
-            System.out.println("Sample " + removed.sample()+ " with instance ID " + removed.id() + " has been removed from track " + removed.trackName());
-
             return Uni.createFrom().item(Empty.getDefaultInstance());
         } catch (IllegalArgumentException e) {
             System.err.println("Error removing sample: " + e.getMessage());
@@ -74,16 +76,18 @@ public class EditGrpcService implements EditService {
         }
     }
 
-    // Handle incoming requests to update track info
     // Test command: grpcurl -plaintext -d '{\"trackId\": 3, \"name\": \"Drums\"}' localhost:9000 edit.EditService/ChangeTrackInfo
     @RunOnVirtualThread
     @Override
     public Uni<Empty> changeTrackInfo(TrackInfo request) {
-        trackService.updateTrackName(request.getTrackId(), request.getName());
-        trackInfoEmitters.forEach(emitter -> emitter.emit(request));
-
-        // Return a successful response
-        return Uni.createFrom().item(Empty.getDefaultInstance());
+        try {
+            trackService.updateTrackName(request.getTrackId(), request.getName());
+            trackInfoEmitters.forEach(emitter -> emitter.emit(request));
+            return Uni.createFrom().item(Empty.getDefaultInstance());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error renaming track id " + request.getTrackId() + " to " + request.getName() + " : " + e.getMessage());
+            return Uni.createFrom().failure(e);
+        }
     }
 
     // Stream sample positions to clients

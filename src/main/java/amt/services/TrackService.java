@@ -21,9 +21,6 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
     TrackRepository trackRepository;
 
     @Inject
-    TrackService trackService;
-
-    @Inject
     SampleRepository sampleRepository;
 
     @Inject
@@ -81,16 +78,17 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
 
     public TrackDTO getTrackById(Long id) {
         return trackRepository.findById(id).map(this::toDTO).orElseThrow(() ->
-                new IllegalArgumentException("Track not found"));
+                new IllegalArgumentException("Track " + id + " not found"));
     }
 
     @Transactional
     public void updateTrackName(Long trackId, String newName) {
         Track track = trackRepository.findById(trackId)
                 .orElseThrow(() -> new IllegalArgumentException("Track not found with ID: " + trackId));
-
+        String oldName = track.getName();
         track.setName(newName);
         trackRepository.save(track);
+        System.out.println("Track: " + oldName + " has been renamed " + newName);
     }
 
     @Transactional
