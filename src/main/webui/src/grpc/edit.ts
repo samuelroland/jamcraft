@@ -18,46 +18,21 @@ export interface SampleInstanceId {
  */
 export interface SampleInfo {
     /**
-     * @generated from protobuf field: uint64 id = 1;
-     */
-    id: bigint; // samples.id
-    /**
-     * @generated from protobuf field: string name = 2;
-     */
-    name: string;
-    /**
-     * @generated from protobuf field: string filepath = 3;
-     */
-    filepath: string;
-    /**
-     * @generated from protobuf field: double duration = 4;
-     */
-    duration: number;
-    /**
-     * @generated from protobuf field: string createdAt = 5;
-     */
-    createdAt: string;
-}
-/**
- * @generated from protobuf message edit.SamplePosition
- */
-export interface SamplePosition {
-    /**
-     * @generated from protobuf field: uint64 id = 1;
-     */
-    id: bigint; // samples.id
-    /**
-     * @generated from protobuf field: uint64 instanceId = 2;
+     * @generated from protobuf field: uint64 instanceId = 1;
      */
     instanceId: bigint; // sample_tracks.id !
     /**
-     * @generated from protobuf field: uint64 startTime = 3;
+     * @generated from protobuf field: uint64 sampleId = 2;
      */
-    startTime: bigint;
+    sampleId: bigint;
     /**
-     * @generated from protobuf field: uint64 trackId = 4;
+     * @generated from protobuf field: uint64 trackId = 3;
      */
     trackId: bigint;
+    /**
+     * @generated from protobuf field: double startTime = 4;
+     */
+    startTime: number;
 }
 /**
  * @generated from protobuf message edit.TrackInfo
@@ -88,11 +63,10 @@ export const SampleInstanceId = new SampleInstanceId$Type();
 class SampleInfo$Type extends MessageType<SampleInfo> {
     constructor() {
         super("edit.SampleInfo", [
-            { no: 1, name: "id", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 2, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 3, name: "filepath", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-            { no: 4, name: "duration", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ },
-            { no: 5, name: "createdAt", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "instanceId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 2, name: "sampleId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 3, name: "trackId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 4, name: "startTime", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ }
         ]);
     }
 }
@@ -100,21 +74,6 @@ class SampleInfo$Type extends MessageType<SampleInfo> {
  * @generated MessageType for protobuf message edit.SampleInfo
  */
 export const SampleInfo = new SampleInfo$Type();
-// @generated message type with reflection information, may provide speed optimized methods
-class SamplePosition$Type extends MessageType<SamplePosition> {
-    constructor() {
-        super("edit.SamplePosition", [
-            { no: 1, name: "id", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 2, name: "instanceId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 3, name: "startTime", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 4, name: "trackId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ }
-        ]);
-    }
-}
-/**
- * @generated MessageType for protobuf message edit.SamplePosition
- */
-export const SamplePosition = new SamplePosition$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class TrackInfo$Type extends MessageType<TrackInfo> {
     constructor() {
@@ -132,8 +91,8 @@ export const TrackInfo = new TrackInfo$Type();
  * @generated ServiceType for protobuf service edit.EditService
  */
 export const EditService = new ServiceType("edit.EditService", [
-    { name: "GetSamplePositions", serverStreaming: true, options: {}, I: Empty, O: SamplePosition },
-    { name: "ChangeSamplePosition", options: {}, I: SamplePosition, O: Empty },
+    { name: "GetSamplePositions", serverStreaming: true, options: {}, I: Empty, O: SampleInfo },
+    { name: "ChangeSamplePosition", options: {}, I: SampleInfo, O: Empty },
     { name: "RemoveSample", options: {}, I: SampleInstanceId, O: Empty },
     { name: "GetUpdatedTracks", serverStreaming: true, options: {}, I: Empty, O: TrackInfo },
     { name: "ChangeTrackInfo", options: {}, I: TrackInfo, O: Empty },

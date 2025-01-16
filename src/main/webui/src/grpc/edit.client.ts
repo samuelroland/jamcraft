@@ -4,12 +4,11 @@
 import type { RpcTransport } from "@protobuf-ts/runtime-rpc";
 import type { ServiceInfo } from "@protobuf-ts/runtime-rpc";
 import { EditService } from "./edit";
-import type { SampleInfo } from "./edit";
 import type { TrackInfo } from "./edit";
 import type { SampleInstanceId } from "./edit";
 import type { UnaryCall } from "@protobuf-ts/runtime-rpc";
 import { stackIntercept } from "@protobuf-ts/runtime-rpc";
-import type { SamplePosition } from "./edit";
+import type { SampleInfo } from "./edit";
 import type { Empty } from "./google/protobuf/empty";
 import type { ServerStreamingCall } from "@protobuf-ts/runtime-rpc";
 import type { RpcOptions } from "@protobuf-ts/runtime-rpc";
@@ -20,15 +19,15 @@ export interface IEditServiceClient {
     /**
      * Server-side streaming to broadcast positions of samples changed by others
      *
-     * @generated from protobuf rpc: GetSamplePositions(google.protobuf.Empty) returns (stream edit.SamplePosition);
+     * @generated from protobuf rpc: GetSamplePositions(google.protobuf.Empty) returns (stream edit.SampleInfo);
      */
-    getSamplePositions(input: Empty, options?: RpcOptions): ServerStreamingCall<Empty, SamplePosition>;
+    getSamplePositions(input: Empty, options?: RpcOptions): ServerStreamingCall<Empty, SampleInfo>;
     /**
      * Unary sending to let clients change position of samples
      *
-     * @generated from protobuf rpc: ChangeSamplePosition(edit.SamplePosition) returns (google.protobuf.Empty);
+     * @generated from protobuf rpc: ChangeSamplePosition(edit.SampleInfo) returns (google.protobuf.Empty);
      */
-    changeSamplePosition(input: SamplePosition, options?: RpcOptions): UnaryCall<SamplePosition, Empty>;
+    changeSamplePosition(input: SampleInfo, options?: RpcOptions): UnaryCall<SampleInfo, Empty>;
     /**
      * Unary sending to let clients remove a sample from the project, giving the samples_tracks.id !
      *
@@ -66,20 +65,20 @@ export class EditServiceClient implements IEditServiceClient, ServiceInfo {
     /**
      * Server-side streaming to broadcast positions of samples changed by others
      *
-     * @generated from protobuf rpc: GetSamplePositions(google.protobuf.Empty) returns (stream edit.SamplePosition);
+     * @generated from protobuf rpc: GetSamplePositions(google.protobuf.Empty) returns (stream edit.SampleInfo);
      */
-    getSamplePositions(input: Empty, options?: RpcOptions): ServerStreamingCall<Empty, SamplePosition> {
+    getSamplePositions(input: Empty, options?: RpcOptions): ServerStreamingCall<Empty, SampleInfo> {
         const method = this.methods[0], opt = this._transport.mergeOptions(options);
-        return stackIntercept<Empty, SamplePosition>("serverStreaming", this._transport, method, opt, input);
+        return stackIntercept<Empty, SampleInfo>("serverStreaming", this._transport, method, opt, input);
     }
     /**
      * Unary sending to let clients change position of samples
      *
-     * @generated from protobuf rpc: ChangeSamplePosition(edit.SamplePosition) returns (google.protobuf.Empty);
+     * @generated from protobuf rpc: ChangeSamplePosition(edit.SampleInfo) returns (google.protobuf.Empty);
      */
-    changeSamplePosition(input: SamplePosition, options?: RpcOptions): UnaryCall<SamplePosition, Empty> {
+    changeSamplePosition(input: SampleInfo, options?: RpcOptions): UnaryCall<SampleInfo, Empty> {
         const method = this.methods[1], opt = this._transport.mergeOptions(options);
-        return stackIntercept<SamplePosition, Empty>("unary", this._transport, method, opt, input);
+        return stackIntercept<SampleInfo, Empty>("unary", this._transport, method, opt, input);
     }
     /**
      * Unary sending to let clients remove a sample from the project, giving the samples_tracks.id !
