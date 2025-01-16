@@ -1,7 +1,7 @@
 import SampleItem from './SampleItem.tsx';
-import { Sample } from "../../types.ts";
-import { useEffect, useRef, useState } from "react";
-import WaveSurfer from "wavesurfer.js";
+import { Sample } from '../../types.ts';
+import { useEffect, useRef, useState } from 'react';
+import WaveSurfer from 'wavesurfer.js';
 
 function Library() {
     // Samples
@@ -50,10 +50,8 @@ function Library() {
     }, [currentIndex, samplesColors, samples]);
 
     const togglePlay = (index: number) => {
-        if (currentIndex === index)
-            waveSurferRef.current?.playPause();
-        else
-            setCurrentIndex(index); // Update current sample index
+        if (currentIndex === index) waveSurferRef.current?.playPause();
+        else setCurrentIndex(index); // Update current sample index
     };
 
     if (samples.length === 0) return <div>Loading samples...</div>;
