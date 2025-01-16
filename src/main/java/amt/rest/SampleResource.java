@@ -1,16 +1,23 @@
 package amt.rest;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.util.List;
 
 import amt.dto.SampleDTO;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
 import net.bramp.ffmpeg.FFprobe;
-import net.bramp.ffmpeg.probe.FFmpegProbeResult;
-import net.bramp.ffmpeg.probe.FFmpegFormat;
-import net.bramp.ffmpeg.probe.FFmpegStream;
+import net.bramp.ffmpeg.probe.*;
 import amt.services.SampleService;
+import org.jboss.resteasy.reactive.multipart.FileUpload;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -20,6 +27,13 @@ import jakarta.ws.rs.core.Response;
 
 @Path("samples")
 public class SampleResource {
+
+    // TODO: make sure this folder works in production too
+    private static String AUDIO_STORAGE_FOLDER = "build/resources/main/META-INF/resources/audio/";
+
+    // As a simplification, we decided to be Linux/Mac specific, and install
+    // ffmpeg+ffprobe in the docker image for production deployment
+    private static String FFPROBE_PATH = "/usr/bin/ffprobe";
 
     @Inject
     SampleService sampleService;
@@ -31,21 +45,36 @@ public class SampleResource {
     }
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response uploadSample(SampleDTO sampleDTO) {
-        String filename = "f-r-a-g-i-l-e__lotus-guzheng-chops-cm.mp3";
+    public Response uploadSample(FileUploadInput form) {
+        if (form.name == null || form.name.trim().isEmpty()) {
+            throw new BadRequestException("Name is required and must be not empty");
+        }
+        if (form.file == null) {
+            throw new BadRequestException("File is not provided");
+        }
 
         try {
+            var filename = form.file.fileName();
+            var file = form.file.filePath().toFile();
+            var fileDestination = AUDIO_STORAGE_FOLDER + filename;
+            Files.move(Paths.get(file.getPath()), Paths.get(fileDestination),
+                    StandardCopyOption.REPLACE_EXISTING);
+            var name = form.name;
             // TODO: do not hardcode path to ffprobe for windows dev
-            FFprobe ffprobe = new FFprobe("/usr/bin/ffprobe");
-            // TODO: make sure this folder works in production too
-            FFmpegProbeResult probeResult = ffprobe.probe("build/resources/main/META-INF/resources/audio/" + filename);
+            FFprobe ffprobe = new FFprobe(FFPROBE_PATH);
+            FFmpegProbeResult probeResult = ffprobe
+                    .probe(fileDestination);
 
             FFmpegFormat format = probeResult.getFormat();
-            // ffprobe -v quiet -print_format compact=print_section=0:nokey=1:escape=csv
-            // -show_entries format=duration audio.mp3
-            var finalSample = new SampleDTO(null, sampleDTO.name(), sampleDTO.filepath(), format.duration, null);
+
+            if (!format.format_name.equals("mp3")) {
+                Files.delete(Paths.get(fileDestination));
+                throw new BadRequestException("Unsupported format, only mp3 format is accepted.");
+            }
+
+            var finalSample = new SampleDTO(null, name, filename, format.duration, null);
             return Response.ok(sampleService.saveSample(finalSample)).build();
         } catch (IOException e) {
             System.err.println(e.toString());
@@ -53,6 +82,14 @@ public class SampleResource {
         }
     }
 
+    public static class FileUploadInput {
+        @FormParam("name")
+        public String name;
+
+        @FormParam("file")
+        public FileUpload file;
+
+    }
     // TODO Routes: Track:
     // POST upload des samples depuis webapp
     // Export du projet format mp3 => Route /export (exportResource)
