@@ -23,6 +23,9 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.1.1
         version: 1.1.1(@types/react@18.3.16)(react@18.3.1)
+      '@wavesurfer/react':
+        specifier: ^1.0.8
+        version: 1.0.8(react@18.3.1)(wavesurfer.js@7.8.16)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -750,6 +753,12 @@ packages:
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: ^4.2.0 || ^5.0.0 || ^6.0.0
+
+  '@wavesurfer/react@1.0.8':
+    resolution: {integrity: sha512-YowJcynQTTC1oWBWlxr7IkZn9QlYfvOC2rYqOvVA2DwBh+nMEoZca7718disoFNnnX7/NzTKqZd/VuWI5RbhMQ==}
+    peerDependencies:
+      react: ^19.0.0
+      wavesurfer.js: '>=7.8.11'
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -2162,6 +2171,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@wavesurfer/react@1.0.8(react@18.3.1)(wavesurfer.js@7.8.16)':
+    dependencies:
+      react: 18.3.1
+      wavesurfer.js: 7.8.16
+
   acorn-jsx@5.3.2(acorn@8.14.0):
     dependencies:
       acorn: 8.14.0
@@ -2918,6 +2932,7 @@ snapshots:
       '@protobuf-ts/runtime-rpc': 2.9.4
       '@radix-ui/react-slider': 1.2.2(@types/react-dom@18.3.5(@types/react@18.3.16))(@types/react@18.3.16)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-slot': 1.1.1(@types/react@18.3.16)(react@18.3.1)
+      '@wavesurfer/react': 1.0.8(react@18.3.1)(wavesurfer.js@7.8.16)
       class-variance-authority: 0.7.1
       clsx: 2.1.1
       lucide-react: 0.469.0(react@18.3.1)
@@ -2926,6 +2941,7 @@ snapshots:
       tailwind-merge: 2.6.0
       tailwindcss-animate: 1.0.7(tailwindcss@3.4.16)
       wavesurfer-multitrack: 0.4.12
+      wavesurfer.js: 7.8.16
     transitivePeerDependencies:
       - '@types/react'
       - '@types/react-dom'
