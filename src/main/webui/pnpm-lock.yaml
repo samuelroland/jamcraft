@@ -44,6 +44,9 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.16)
+      webui:
+        specifier: 'file:'
+        version: file:(@types/react-dom@18.3.5(@types/react@18.3.16))(@types/react@18.3.16)(tailwindcss@3.4.16)
     devDependencies:
       '@eslint/js':
         specifier: ^9.15.0
@@ -1521,6 +1524,9 @@ packages:
       yaml:
         optional: true
 
+  'webui@file:':
+    resolution: {directory: '', type: directory}
+
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
     engines: {node: '>= 8'}
@@ -2886,6 +2892,25 @@ snapshots:
       fsevents: 2.3.3
       jiti: 1.21.6
       yaml: 2.6.1
+
+  webui@file:(@types/react-dom@18.3.5(@types/react@18.3.16))(@types/react@18.3.16)(tailwindcss@3.4.16):
+    dependencies:
+      '@protobuf-ts/grpcweb-transport': 2.9.4
+      '@protobuf-ts/runtime': 2.9.4
+      '@protobuf-ts/runtime-rpc': 2.9.4
+      '@radix-ui/react-slider': 1.2.2(@types/react-dom@18.3.5(@types/react@18.3.16))(@types/react@18.3.16)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@radix-ui/react-slot': 1.1.1(@types/react@18.3.16)(react@18.3.1)
+      class-variance-authority: 0.7.1
+      clsx: 2.1.1
+      lucide-react: 0.469.0(react@18.3.1)
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      tailwind-merge: 2.6.0
+      tailwindcss-animate: 1.0.7(tailwindcss@3.4.16)
+    transitivePeerDependencies:
+      - '@types/react'
+      - '@types/react-dom'
+      - tailwindcss
 
   which@2.0.2:
     dependencies:

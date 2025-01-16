@@ -1,23 +1,30 @@
 import SampleItem from './SampleItem.tsx';
+import { Sample } from "../../types.ts";
+import { useEffect, useState } from "react";
 
 function Library() {
-    const samples = [
-        { id: 1, name: 'Kick Drum', filepath: 'kick.wav', duration: 0.5, createdAt: new Date() },
-        { id: 2, name: 'Snare Drum', filepath: 'snare.wav', duration: 0.5, createdAt: new Date() },
-        { id: 3, name: 'Hi-Hat', filepath: 'hihat.wav', duration: 1, createdAt: new Date() },
-        { id: 4, name: 'Bass', filepath: 'bass.wav', duration: 2, createdAt: new Date() },
-        { id: 5, name: 'Synth', filepath: 'synth.wav', duration: 1.5, createdAt: new Date() },
-        { id: 6, name: 'Rock kick', filepath: 'rockKick.wav', duration: 5, createdAt: new Date() },
-    ];
+    const [samples, setSamples] = useState<Sample[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        // Call API to retrieves sampels
+        fetch('/samples')
+            .then((response) => response.json())
+            .then((data) => {
+                setSamples(data); // Set samples
+                setLoading(false); // End of loading
+            })
+            .catch((error) => {
+                console.error('Error while fetching samples: ', error);
+                setLoading(false);
+            })
+    }, []);
 
     // Tableau de couleurs définies
-    const colors = [
-        '#e83f3f',
-        '#23852f',
-        '#3b70be',
-        '#e57c2f',
-        '#5c218a',
-    ];
+    const colors = ['#e83f3f', '#23852f', '#3b70be', '#e57c2f', '#5c218a'];
+
+    if (loading)
+        return <div>Loading samples...</div>;
 
     return (
         <div className="p-4 bg-white-100 rounded-md shadow-md">
