@@ -90,7 +90,6 @@ public class EditGrpcService implements EditService {
         }
     }
 
-    // Stream sample positions to clients
     // Test command: grpcurl -plaintext localhost:9000 edit.EditService/GetSamplePositions
     @Override
     public Multi<SampleInfo> getSamplePositions(Empty request) {
@@ -100,7 +99,6 @@ public class EditGrpcService implements EditService {
         });
     }
 
-    // Stream updated track info to clients
     // Test command: grpcurl -plaintext localhost:9000 edit.EditService/GetUpdatedTracks
     @Override
     public Multi<TrackInfo> getUpdatedTracks(Empty request) {
@@ -110,7 +108,6 @@ public class EditGrpcService implements EditService {
         });
     }
 
-    // Stream uploaded sample info to clients
     // Test command: grpcurl -plaintext localhost:9000 edit.EditService/GetSampleUploads
     @Override
     public Multi<SampleInfo> getSampleUploads(Empty request) {
