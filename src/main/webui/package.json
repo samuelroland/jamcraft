@@ -22,6 +22,8 @@
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
+    "wavesurfer-multitrack": "^0.4.12",
+    "wavesurfer.js": "^7.8.16",
     "webui": "file:"
   },
   "devDependencies": {
