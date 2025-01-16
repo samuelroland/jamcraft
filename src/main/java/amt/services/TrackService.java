@@ -21,7 +21,13 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
     TrackRepository trackRepository;
 
     @Inject
+    TrackService trackService;
+
+    @Inject
     SampleRepository sampleRepository;
+
+    @Inject
+    SampleService sampleService;
 
     @Override
     public Track fromDTO(TrackDTO trackDTO) {
@@ -48,18 +54,13 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
 
     @Override
     public TrackDTO toDTO(Track track) {
-        List<SampleInTrackDTO> sampleInTrackDTOs = track.getSamples().stream().map(sampleTrack -> {
-            Sample sample = sampleTrack.getSample();
-            return new SampleInTrackDTO(
-                    sample.getId(),
-                    sampleTrack.getId(),
-                    sample.getName(),
-                    sample.getFilepath(),
-                    sample.getDuration(),
-                    sample.getCreatedAt(),
-                    sampleTrack.getStartTime()
-            );
-        }).toList();
+        List<SampleInTrackDTO> sampleInTrackDTOs = track.getSamples().stream().map(sampleTrack -> new SampleInTrackDTO(
+                sampleTrack.getId(),
+                sampleService.toDTO(sampleTrack.getSample()),
+                sampleTrack.getTrack().getId(),
+                sampleTrack.getTrack().getName(),
+                sampleTrack.getStartTime()
+        )).toList();
 
         return new TrackDTO(
                 track.getId(),

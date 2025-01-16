@@ -10,9 +10,9 @@ package edit;
 
 service EditService {
     // Server-side streaming to broadcast positions of samples changed by others
-    rpc GetSamplePositions(google.protobuf.Empty) returns (stream SamplePosition);
+    rpc GetSamplePositions(google.protobuf.Empty) returns (stream SampleInfo);
     // Unary sending to let clients change position of samples
-    rpc ChangeSamplePosition(SamplePosition) returns (google.protobuf.Empty);
+    rpc ChangeSamplePosition(SampleInfo) returns (google.protobuf.Empty);
     // Unary sending to let clients remove a sample from the project, giving the samples_tracks.id !
     rpc RemoveSample(SampleInstanceId) returns (google.protobuf.Empty);
 
@@ -30,18 +30,10 @@ message SampleInstanceId {
 }
 
 message SampleInfo {
-    uint64 sampleId = 1;
-    string name = 2;
-    string filepath = 3;
-    double duration = 4;
-    string createdAt = 5;
-}
-
-message SamplePosition {
-    uint64 sampleId = 1;
-    uint64 instanceId = 2;// sample_tracks.id !
-    double startTime = 3;
-    uint64 trackId = 4;
+    uint64 instanceId = 1;// sample_tracks.id !
+    uint64 sampleId = 2;
+    uint64 trackId = 3;
+    double startTime = 4;
 }
 
 message TrackInfo {

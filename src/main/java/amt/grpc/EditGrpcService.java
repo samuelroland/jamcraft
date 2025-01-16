@@ -1,8 +1,6 @@
 package amt.grpc;
 
 import amt.*;
-import amt.dto.TrackDTO;
-import amt.services.SampleService;
 import amt.services.SampleTrackService;
 import amt.services.TrackService;
 import com.google.protobuf.Empty;
@@ -19,26 +17,24 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class EditGrpcService implements EditService {
 
     @Inject
-    SampleService sampleService; // Handles DB operations for samples
-    @Inject
     TrackService trackService; // Handles DB operations for tracks
     @Inject
     SampleTrackService sampleTrackService;
 
     // Active emitters for streaming sample positions
-    private final CopyOnWriteArrayList<MultiEmitter<? super SamplePosition>> samplePositionEmitters = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<MultiEmitter<? super SampleInfo>> samplePositionEmitters = new CopyOnWriteArrayList<>();
 
     // Active emitters for streaming track info updates
     private final CopyOnWriteArrayList<MultiEmitter<? super TrackInfo>> trackInfoEmitters = new CopyOnWriteArrayList<>();
 
     // Active emitters for streaming sample uploads
-    private final CopyOnWriteArrayList<MultiEmitter<? super SampleInfo>> sampleUploadEmitters = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<MultiEmitter<? super SampleInfo>> sampleRemoveEmitters = new CopyOnWriteArrayList<>();
 
     // Handle incoming requests to change sample position
     // Test command: grpcurl -plaintext -d '{\"sampleId\": 3, \"instanceId\": 8, \"startTime\": 42.42, \"trackId\": 4}' localhost:9000 edit.EditService/ChangeSamplePosition
     @RunOnVirtualThread
     @Override
-    public Uni<Empty> changeSamplePosition(SamplePosition request) {
+    public Uni<Empty> changeSamplePosition(SampleInfo request) {
 
         // Update the sample position in the database
         sampleTrackService.updateSampleTrackPosition(request.getInstanceId(), request.getStartTime());
@@ -51,11 +47,31 @@ public class EditGrpcService implements EditService {
     }
 
     // Handle incoming requests to remove a sample
+    // Test command : grpcurl -plaintext -d '{\"instanceId\": 1}' localhost:9000 edit.EditService/RemoveSample
+    @RunOnVirtualThread
     @Override
     public Uni<Empty> removeSample(SampleInstanceId request) {
-        // In a real implementation, handle removal logic here
-        System.out.println("Removing sample with instance ID: " + request.getInstanceId());
-        return Uni.createFrom().item(Empty.getDefaultInstance());
+        try {
+            // Remove the SampleTrack from the database
+            var removed = sampleTrackService.removeSampleTrack(request.getInstanceId());
+
+
+            // Notify listeners with the removed SampleTrack info
+            SampleInfo response = SampleInfo.newBuilder()
+                    .setInstanceId(removed.id())
+                    .setSampleId(removed.sample().id())
+                    .setTrackId(removed.trackId())
+                    .setStartTime(removed.startTime())
+                    .build();
+
+            sampleRemoveEmitters.forEach(emitter -> emitter.emit(response));
+            System.out.println("Sample " + removed.sample()+ " with instance ID " + removed.id() + " has been removed from track " + removed.trackName());
+
+            return Uni.createFrom().item(Empty.getDefaultInstance());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error removing sample: " + e.getMessage());
+            return Uni.createFrom().failure(e);
+        }
     }
 
     // Handle incoming requests to update track info
@@ -73,7 +89,7 @@ public class EditGrpcService implements EditService {
     // Stream sample positions to clients
     // Test command: grpcurl -plaintext localhost:9000 edit.EditService/GetSamplePositions
     @Override
-    public Multi<SamplePosition> getSamplePositions(Empty request) {
+    public Multi<SampleInfo> getSamplePositions(Empty request) {
         return Multi.createFrom().emitter(emitter -> {
             samplePositionEmitters.add(emitter);
             emitter.onTermination(() -> samplePositionEmitters.remove(emitter));
@@ -91,11 +107,12 @@ public class EditGrpcService implements EditService {
     }
 
     // Stream uploaded sample info to clients
+    // Test command: grpcurl -plaintext localhost:9000 edit.EditService/GetSampleUploads
     @Override
     public Multi<SampleInfo> getSampleUploads(Empty request) {
         return Multi.createFrom().emitter(emitter -> {
-            sampleUploadEmitters.add(emitter);
-            emitter.onTermination(() -> sampleUploadEmitters.remove(emitter));
+            sampleRemoveEmitters.add(emitter);
+            emitter.onTermination(() -> sampleRemoveEmitters.remove(emitter));
         });
     }
 }
