@@ -30,7 +30,7 @@ message SampleInstanceId {
 }
 
 message SampleInfo {
-    uint64 id = 1;// samples.id
+    uint64 sampleId = 1;// samples.id
     string name = 2;
     string filepath = 3;
     double duration = 4;
@@ -38,9 +38,9 @@ message SampleInfo {
 }
 
 message SamplePosition {
-    uint64 id = 1;        // samples.id
+    uint64 sampleId = 1;        // samples.id
     uint64 instanceId = 2;// sample_tracks.id !
-    uint64 startTime = 3;
+    double startTime = 3;
     uint64 trackId = 4;
 }
 

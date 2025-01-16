@@ -8,9 +8,11 @@ import amt.entities.Track;
 import amt.repositories.SampleRepository;
 import amt.repositories.SampleTrackRepository;
 import amt.repositories.TrackRepository;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+@ApplicationScoped
 public class SampleTrackService implements DtoConverter<SampleTrack, SampleInTrackDTO> {
 
     @Inject
@@ -51,4 +53,14 @@ public class SampleTrackService implements DtoConverter<SampleTrack, SampleInTra
                 .orElseThrow(() -> new IllegalArgumentException("SampleTrack not found"));
         sampleTrackRepository.deleteById(sampleTrack.getId());
     }
+
+    @Transactional
+    public void updateSampleTrackPosition(Long instanceId, Double newStartTime) {
+        SampleTrack sampleTrack = sampleTrackRepository.findById(instanceId)
+                .orElseThrow(() -> new IllegalArgumentException("SampleTrack not found with ID: " + instanceId));
+
+        sampleTrack.setStartTime(newStartTime);
+        sampleTrackRepository.save(sampleTrack);
+    }
+
 }

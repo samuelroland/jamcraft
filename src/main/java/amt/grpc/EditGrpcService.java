@@ -2,6 +2,7 @@ package amt.grpc;
 
 import amt.*;
 import amt.services.SampleService;
+import amt.services.SampleTrackService;
 import amt.services.TrackService;
 import com.google.protobuf.Empty;
 import io.quarkus.grpc.GrpcService;
@@ -20,6 +21,8 @@ public class EditGrpcService implements EditService {
     SampleService sampleService; // Handles DB operations for samples
     @Inject
     TrackService trackService; // Handles DB operations for tracks
+    @Inject
+    SampleTrackService sampleTrackService;
 
     // Active emitters for streaming sample positions
     private final CopyOnWriteArrayList<MultiEmitter<? super SamplePosition>> samplePositionEmitters = new CopyOnWriteArrayList<>();
@@ -31,15 +34,15 @@ public class EditGrpcService implements EditService {
     private final CopyOnWriteArrayList<MultiEmitter<? super SampleInfo>> sampleUploadEmitters = new CopyOnWriteArrayList<>();
 
     // Handle incoming requests to change sample position
+    // Test command: grpcurl -plaintext -d '{\"sampleId\": 3, \"instanceId\": 8, \"startTime\": 42.42, \"trackId\": 4}' localhost:9000 edit.EditService/ChangeSamplePosition
     @RunOnVirtualThread
     @Override
     public Uni<Empty> changeSamplePosition(SamplePosition request) {
 
-        // TODO Update the SampleTrack
-//        var sampleTrack = sampleService.getSampleById(request.getId());
-//        sample.
-//        sampleService.saveSample(sample);
-        // Notify all subscribers of the new sample position
+        // Update the sample position in the database
+        sampleTrackService.updateSampleTrackPosition(request.getInstanceId(), request.getStartTime());
+
+        // Notify all connected clients about the update
         samplePositionEmitters.forEach(emitter -> emitter.emit(request));
 
         // Return a successful response

@@ -8,4 +8,3 @@ public interface DtoConverter<E, D> {
     // Converts an entity to a DTO
     D toDTO(E entity);
 }
-

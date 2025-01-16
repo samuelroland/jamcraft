@@ -7,4 +7,3 @@ public record UserDTO(
         String name,
         LocalDateTime createdAt
 ) {}
-
