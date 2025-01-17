@@ -60,3 +60,7 @@ kls_database.db
 src/main/webui/.vite
 envoy.yaml
 audio
+mixing
+new_audio
+audio_base
+new_audio_base
