@@ -29,7 +29,7 @@ import jakarta.ws.rs.core.Response;
 public class SampleResource {
 
     // TODO: make sure this folder works in production too
-    private static String AUDIO_STORAGE_FOLDER = "build/resources/main/META-INF/resources/audio/";
+    private static String AUDIO_STORAGE_FOLDER = "audio/";
 
     // As a simplification, we decided to be Linux/Mac specific, and install
     // ffmpeg+ffprobe in the docker image for production deployment
@@ -58,6 +58,9 @@ public class SampleResource {
         try {
             var filename = form.file.fileName();
             var file = form.file.filePath().toFile();
+            if (!filename.endsWith(".mp3")) {
+                throw new BadRequestException("File must ends with .mp3 extension, other formats are not supported");
+            }
             var fileDestination = AUDIO_STORAGE_FOLDER + filename;
             Files.move(Paths.get(file.getPath()), Paths.get(fileDestination),
                     StandardCopyOption.REPLACE_EXISTING);
