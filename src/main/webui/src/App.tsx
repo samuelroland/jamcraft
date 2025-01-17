@@ -6,6 +6,8 @@ import { MousePosition } from './grpc/mouse'
 import TrackList from './components/TrackList'
 import { MIN_MOUSE_MSG_INTERVAL, PROXY_BASE_URL } from './constants'
 import Library from './components/Library'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
     const transport = useMemo(() => new GrpcWebFetchTransport({
@@ -71,6 +73,7 @@ function App() {
 
     return (
         <>
+            <ToastContainer position="top-right" autoClose={4000} hideProgressBar={true} pauseOnHover={true}></ToastContainer>
             <div className="flex h-screen">
                 {/* Library on the left */}
                 <div className="w-1/4 h-full bg-gray-100 p-4 relative">

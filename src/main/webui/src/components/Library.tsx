@@ -2,6 +2,7 @@ import SampleItem from './SampleItem.tsx';
 import { Sample } from '../../types.ts';
 import { useEffect, useRef, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
+import { toast } from 'react-toastify';
 
 function Library() {
     // Samples
