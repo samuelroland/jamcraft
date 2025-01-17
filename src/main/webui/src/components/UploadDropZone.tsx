@@ -1,13 +1,13 @@
 import { useState } from 'react';
 
-import { ToastContainer, toast } from 'react-toastify';
 import { Sample } from '../../types';
+import { toast } from 'react-toastify';
 
 type Props = {
     onSuccessfulUpload: (sample: Sample) => void;
 };
 
-const FileDropZone = ({ onSuccessfulUpload }: Props) => {
+const UploadDropZone = ({ onSuccessfulUpload }: Props) => {
     const [hoveringDropZone, setHoveringDropZone] = useState(false);
 
     const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
@@ -65,4 +65,4 @@ const FileDropZone = ({ onSuccessfulUpload }: Props) => {
     );
 };
 
-export default FileDropZone;
+export default UploadDropZone;
