@@ -23,6 +23,7 @@ dependencies {
     implementation("io.quarkus:quarkus-rest-jackson")
     implementation("io.quarkus:quarkus-jdbc-postgresql")
     implementation("net.bramp.ffmpeg:ffmpeg:0.8.0")
+    implementation("io.quarkus:quarkus-vertx")
     testImplementation("io.quarkus:quarkus-junit5")
 }
 
