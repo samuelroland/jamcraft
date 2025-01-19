@@ -14,6 +14,15 @@ export interface UserName {
     name: string;
 }
 /**
+ * @generated from protobuf message users.UserId
+ */
+export interface UserId {
+    /**
+     * @generated from protobuf field: uint64 id = 1;
+     */
+    id: bigint;
+}
+/**
  * @generated from protobuf message users.UsersList
  */
 export interface UsersList {
@@ -82,6 +91,18 @@ class UserName$Type extends MessageType<UserName> {
  */
 export const UserName = new UserName$Type();
 // @generated message type with reflection information, may provide speed optimized methods
+class UserId$Type extends MessageType<UserId> {
+    constructor() {
+        super("users.UserId", [
+            { no: 1, name: "id", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ }
+        ]);
+    }
+}
+/**
+ * @generated MessageType for protobuf message users.UserId
+ */
+export const UserId = new UserId$Type();
+// @generated message type with reflection information, may provide speed optimized methods
 class UsersList$Type extends MessageType<UsersList> {
     constructor() {
         super("users.UsersList", [
@@ -125,5 +146,6 @@ export const UserChange = new UserChange$Type();
  */
 export const UsersService = new ServiceType("users.UsersService", [
     { name: "Join", options: {}, I: UserName, O: UsersList },
-    { name: "GetUsersEvents", serverStreaming: true, options: {}, I: Empty, O: UserChange }
+    { name: "GetUsersEvents", serverStreaming: true, options: {}, I: Empty, O: UserChange },
+    { name: "Leave", options: {}, I: UserId, O: UsersList }
 ]);

@@ -4,6 +4,7 @@
 import type { RpcTransport } from "@protobuf-ts/runtime-rpc";
 import type { ServiceInfo } from "@protobuf-ts/runtime-rpc";
 import { UsersService } from "./users";
+import type { UserId } from "./users";
 import type { UserChange } from "./users";
 import type { Empty } from "./google/protobuf/empty";
 import type { ServerStreamingCall } from "@protobuf-ts/runtime-rpc";
@@ -25,12 +26,13 @@ export interface IUsersServiceClient {
     /**
      * Server-side streaming to broadcast users joining or leaving
      *
-     * TODO: do we need to have a Leave() method ? We hope to be able to detect disconnect from the server when
-     * they disconnect from stream returned by GetUsersEvents()
-     *
      * @generated from protobuf rpc: GetUsersEvents(google.protobuf.Empty) returns (stream users.UserChange);
      */
     getUsersEvents(input: Empty, options?: RpcOptions): ServerStreamingCall<Empty, UserChange>;
+    /**
+     * @generated from protobuf rpc: Leave(users.UserId) returns (users.UsersList);
+     */
+    leave(input: UserId, options?: RpcOptions): UnaryCall<UserId, UsersList>;
 }
 /**
  * @generated from protobuf service users.UsersService
@@ -53,13 +55,17 @@ export class UsersServiceClient implements IUsersServiceClient, ServiceInfo {
     /**
      * Server-side streaming to broadcast users joining or leaving
      *
-     * TODO: do we need to have a Leave() method ? We hope to be able to detect disconnect from the server when
-     * they disconnect from stream returned by GetUsersEvents()
-     *
      * @generated from protobuf rpc: GetUsersEvents(google.protobuf.Empty) returns (stream users.UserChange);
      */
     getUsersEvents(input: Empty, options?: RpcOptions): ServerStreamingCall<Empty, UserChange> {
         const method = this.methods[1], opt = this._transport.mergeOptions(options);
         return stackIntercept<Empty, UserChange>("serverStreaming", this._transport, method, opt, input);
+    }
+    /**
+     * @generated from protobuf rpc: Leave(users.UserId) returns (users.UsersList);
+     */
+    leave(input: UserId, options?: RpcOptions): UnaryCall<UserId, UsersList> {
+        const method = this.methods[2], opt = this._transport.mergeOptions(options);
+        return stackIntercept<UserId, UsersList>("unary", this._transport, method, opt, input);
     }
 }
