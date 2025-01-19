@@ -12,12 +12,16 @@ service UsersService {
     rpc Join(UserName) returns (UsersList);
     // Server-side streaming to broadcast users joining or leaving
     rpc GetUsersEvents(google.protobuf.Empty) returns (stream UserChange);
-    // TODO: do we need to have a Leave() method ? We hope to be able to detect disconnect from the server when
-    // they disconnect from stream returned by GetUsersEvents()
+
+    rpc Leave(UserId) returns (UsersList);
 }
 
 message UserName {
     string name = 1;
+}
+
+message UserId {
+    uint64 id = 1;
 }
 
 message UsersList {

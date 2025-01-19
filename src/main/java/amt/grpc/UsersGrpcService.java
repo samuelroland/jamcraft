@@ -10,8 +10,6 @@ import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.subscription.MultiEmitter;
 import jakarta.inject.Inject;
-
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @GrpcService
@@ -34,7 +32,7 @@ public class UsersGrpcService implements UsersService {
                 throw new IllegalArgumentException("Username cannot be longer than 64 characters");
             }
 
-            UserDTO newUser = userService.saveUser(new UserDTO(null, username, null));
+            var newUser = userService.saveUser(new UserDTO(null, username, null));
 
             // Notify all connected clients about the new user
             UserChange userChange = UserChange.newBuilder()
@@ -44,22 +42,31 @@ public class UsersGrpcService implements UsersService {
                     .build();
 
             usersEmitters.forEach(emitter -> emitter.emit(userChange));
-
-            List<UserDTO> users = userService.getAllUsers();
-
-            // Build and return the UsersList response
-            UsersList usersList = UsersList.newBuilder()
-                    .addAllUsers(users.stream()
-                            .map(user -> User.newBuilder()
-                                    .setId(user.id())
-                                    .setName(user.name())
-                                    .build())
-                            .toList())
-                    .build();
-            return Uni.createFrom().item(usersList);
-        } catch (IllegalArgumentException e){
+            return Uni.createFrom().item(getUsersList());
+        } catch (IllegalArgumentException e) {
             System.err.println("Failed to join: " + e.getMessage());
-            // Return an empty UsersList or fail the Uni based on your error-handling approach
+            return Uni.createFrom().failure(e);
+        }
+    }
+
+    // Test command: grpcurl -plaintext -d '{\"id\": 1}' localhost:9000 users.UsersService/Leave
+    @RunOnVirtualThread
+    @Override
+    public Uni<UsersList> leave(UserId request) {
+        try {
+            var userLeft = userService.deleteUser(request.getId());
+
+            // Notify all connected clients about the user leaving
+            var userChange = UserChange.newBuilder()
+                    .setAction(SessionAction.LEAVE)
+                    .setUserId(userLeft.id())
+                    .setName(userLeft.name())
+                    .build();
+
+            usersEmitters.forEach(emitter -> emitter.emit(userChange));
+            return Uni.createFrom().item(getUsersList());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Failed to leave: " + e.getMessage());
             return Uni.createFrom().failure(e);
         }
     }
@@ -71,5 +78,17 @@ public class UsersGrpcService implements UsersService {
             usersEmitters.add(emitter);
             emitter.onTermination(() -> usersEmitters.remove(emitter));
         });
+    }
+
+    private UsersList getUsersList() {
+        // Build and return the UsersList response
+        return UsersList.newBuilder()
+                .addAllUsers(userService.getAllUsers().stream()
+                        .map(user -> User.newBuilder()
+                                .setId(user.id())
+                                .setName(user.name())
+                                .build())
+                        .toList())
+                .build();
     }
 }

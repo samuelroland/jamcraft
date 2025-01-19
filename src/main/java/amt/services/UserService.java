@@ -41,18 +41,23 @@ public class UserService implements DtoConverter<User, UserDTO> {
     @Transactional
     public UserDTO saveUser(UserDTO user) {
         if (user == null) {
-            throw new IllegalArgumentException("User not found");
+            throw new IllegalArgumentException("Cannot save a null User");
         }
         var userDto = toDTO(userRepository.save(fromDTO(user)));
-        System.out.println("New user joined : " + userDto.name());
+        System.out.println("New user added : " + userDto.name());
         return userDto;
     }
 
     @Transactional
-    public void deleteUser(Long id) {
+    public UserDTO deleteUser(Long id) {
+        var user = userRepository.findById(id).map(this::toDTO).orElseThrow(() ->
+                new IllegalArgumentException("User not found with id:" + id));
         userRepository.deleteById(id);
+        System.out.println("User deleted : " + user.name() + " with id: " + user.id());
+        return user;
     }
 
+    @Transactional
     public UserDTO getUserByName(String name) {
         return userRepository.findByName(name).map(this::toDTO).orElseThrow(() ->
                 new IllegalArgumentException("User not found"));
