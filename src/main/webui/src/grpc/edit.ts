@@ -9,26 +9,26 @@ import { MessageType } from "@protobuf-ts/runtime";
  */
 export interface SampleInstanceId {
     /**
-     * @generated from protobuf field: uint64 instanceId = 1;
+     * @generated from protobuf field: uint32 instanceId = 1;
      */
-    instanceId: bigint; // sample_tracks.id !
+    instanceId: number; // sample_tracks.id !
 }
 /**
  * @generated from protobuf message edit.SampleInfo
  */
 export interface SampleInfo {
     /**
-     * @generated from protobuf field: uint64 instanceId = 1;
+     * @generated from protobuf field: uint32 instanceId = 1;
      */
-    instanceId: bigint; // sample_tracks.id !
+    instanceId: number; // sample_tracks.id !
     /**
-     * @generated from protobuf field: uint64 sampleId = 2;
+     * @generated from protobuf field: uint32 sampleId = 2;
      */
-    sampleId: bigint;
+    sampleId: number;
     /**
-     * @generated from protobuf field: uint64 trackId = 3;
+     * @generated from protobuf field: uint32 trackId = 3;
      */
-    trackId: bigint;
+    trackId: number;
     /**
      * @generated from protobuf field: double startTime = 4;
      */
@@ -39,9 +39,9 @@ export interface SampleInfo {
  */
 export interface TrackInfo {
     /**
-     * @generated from protobuf field: uint64 trackId = 1;
+     * @generated from protobuf field: uint32 trackId = 1;
      */
-    trackId: bigint;
+    trackId: number;
     /**
      * @generated from protobuf field: string name = 2;
      */
@@ -51,7 +51,7 @@ export interface TrackInfo {
 class SampleInstanceId$Type extends MessageType<SampleInstanceId> {
     constructor() {
         super("edit.SampleInstanceId", [
-            { no: 1, name: "instanceId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ }
+            { no: 1, name: "instanceId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ }
         ]);
     }
 }
@@ -63,9 +63,9 @@ export const SampleInstanceId = new SampleInstanceId$Type();
 class SampleInfo$Type extends MessageType<SampleInfo> {
     constructor() {
         super("edit.SampleInfo", [
-            { no: 1, name: "instanceId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 2, name: "sampleId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
-            { no: 3, name: "trackId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 1, name: "instanceId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 2, name: "sampleId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 3, name: "trackId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
             { no: 4, name: "startTime", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ }
         ]);
     }
@@ -78,7 +78,7 @@ export const SampleInfo = new SampleInfo$Type();
 class TrackInfo$Type extends MessageType<TrackInfo> {
     constructor() {
         super("edit.TrackInfo", [
-            { no: 1, name: "trackId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 1, name: "trackId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
             { no: 2, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }

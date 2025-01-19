@@ -26,17 +26,17 @@ service EditService {
 }
 
 message SampleInstanceId {
-    uint64 instanceId = 1;// sample_tracks.id !
+    uint32 instanceId = 1;// sample_tracks.id !
 }
 
 message SampleInfo {
-    uint64 instanceId = 1;// sample_tracks.id !
-    uint64 sampleId = 2;
-    uint64 trackId = 3;
+    uint32 instanceId = 1;// sample_tracks.id !
+    uint32 sampleId = 2;
+    uint32 trackId = 3;
     double startTime = 4;
 }
 
 message TrackInfo {
-    uint64 trackId = 1;
+    uint32 trackId = 1;
     string name = 2;
 }

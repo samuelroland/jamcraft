@@ -21,7 +21,7 @@ message UserName {
 }
 
 message UserId {
-    uint64 id = 1;
+    uint32 id = 1;
 }
 
 message UsersList {
@@ -29,7 +29,7 @@ message UsersList {
 }
 
 message User {
-    uint64 id = 1;
+    uint32 id = 1;
     string name = 2;
 }
 
@@ -41,6 +41,6 @@ enum SessionAction {
 
 message UserChange {
     SessionAction action = 1;
-    uint64 userId = 2;
+    uint32 userId = 2;
     string name = 3;
 }

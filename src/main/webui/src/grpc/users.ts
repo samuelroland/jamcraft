@@ -18,9 +18,9 @@ export interface UserName {
  */
 export interface UserId {
     /**
-     * @generated from protobuf field: uint64 id = 1;
+     * @generated from protobuf field: uint32 id = 1;
      */
-    id: bigint;
+    id: number;
 }
 /**
  * @generated from protobuf message users.UsersList
@@ -36,9 +36,9 @@ export interface UsersList {
  */
 export interface User {
     /**
-     * @generated from protobuf field: uint64 id = 1;
+     * @generated from protobuf field: uint32 id = 1;
      */
-    id: bigint;
+    id: number;
     /**
      * @generated from protobuf field: string name = 2;
      */
@@ -53,9 +53,9 @@ export interface UserChange {
      */
     action: SessionAction;
     /**
-     * @generated from protobuf field: uint64 userId = 2;
+     * @generated from protobuf field: uint32 userId = 2;
      */
-    userId: bigint;
+    userId: number;
     /**
      * @generated from protobuf field: string name = 3;
      */
@@ -94,7 +94,7 @@ export const UserName = new UserName$Type();
 class UserId$Type extends MessageType<UserId> {
     constructor() {
         super("users.UserId", [
-            { no: 1, name: "id", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ }
+            { no: 1, name: "id", kind: "scalar", T: 13 /*ScalarType.UINT32*/ }
         ]);
     }
 }
@@ -118,7 +118,7 @@ export const UsersList = new UsersList$Type();
 class User$Type extends MessageType<User> {
     constructor() {
         super("users.User", [
-            { no: 1, name: "id", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 1, name: "id", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
             { no: 2, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
@@ -132,7 +132,7 @@ class UserChange$Type extends MessageType<UserChange> {
     constructor() {
         super("users.UserChange", [
             { no: 1, name: "action", kind: "enum", T: () => ["users.SessionAction", SessionAction] },
-            { no: 2, name: "userId", kind: "scalar", T: 4 /*ScalarType.UINT64*/, L: 0 /*LongType.BIGINT*/ },
+            { no: 2, name: "userId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
             { no: 3, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
