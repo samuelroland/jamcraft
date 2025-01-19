@@ -4,6 +4,7 @@ import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport'
 import { MouseServiceClient } from './grpc/mouse.client'
 import { MousePosition } from './grpc/mouse'
 import { UsersServiceClient} from "./grpc/users.client.ts";
+import {SessionAction} from "./grpc/users.ts"
 import TrackList from './components/TrackList'
 import { MIN_MOUSE_MSG_INTERVAL, PROXY_BASE_URL } from './constants'
 import Library from './components/Library'
@@ -21,12 +22,15 @@ function App() {
     const mouseClient = useMemo(() => new MouseServiceClient(transport), [transport])
     const userClient = useMemo( ()=> new UsersServiceClient(transport),[transport])
 
-    const [userId] = useState(Math.floor(Math.random() * 1000)) // random one for now
     // @ts-ignore
     const [otherMouses, setOtherMouses] = useState<Map<number, MousePosition>>(new Map())
+    const [users,setUsers] = useState<Map<number,String>>(new Map())
 
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+    const [selfId,setSelfId] = useState<number>(10)
+    const selfIdRef = useRef(selfId)
     const [isLogged,setIsLogged] = useState(false)
+    const isLoggedRef = useRef(isLogged)
     // With the help of Copilot, I found that this copy is absolutely necessary
     // If we remove it, setInterval code will not be called when we continuously move the mouse
     const latestMousePosition = useRef(mousePosition)
@@ -40,44 +44,70 @@ function App() {
     }
     const handleLogin = (username) =>{
         const promise = userClient.join({name:username})
-        promise.then((call)=>
-            console.log(call.response)
-        ).catch(error =>{
+        promise.then((call)=> {
+            console.log(call.response.users)
+            for(let user of call.response.users ) {
+                console.log(username,user.name)
+                console.log(user.name == username)
+                if (user.name == username) {
+                    selfIdRef.current = Number(user.id)
+                }
+                setUsers((u) => {
+                    // Create a new Map to maintain immutability
+                    const newMap = new Map(u)
+                    newMap.set(Number(user.id), user.name)
+                    return newMap
+                })
+            }
+            isLoggedRef.current = true
+        }).catch(error =>{
             console.log(error)
         })
-        setIsLogged(true)
     }
 
     const handleUpdatedMousesPositions = (p: MousePosition) => {
         console.log('Got new position', p)
-        if (p.userId == userId) {
+        if (p.userId == selfIdRef.current) {
             return
         }
         setOtherMouses((ms) => {
             // Create a new Map to maintain immutability
-            console.log("mouses",ms)
             const newMap = new Map(ms)
             newMap.set(p.userId, p)
             return newMap
         })
 
     }
-
+    const handleUserEvent = (uc) =>{
+        if(uc.action == SessionAction.JOIN){
+            setUsers(users => {
+                const newMap = new Map(users)
+                newMap.set(Number(uc.userId), uc.name)
+                return newMap
+            })
+        }
+        if(uc.action == SessionAction.LEAVE){
+            console.log("User left")
+        }
+    }
+    useEffect(()=>{
+        console.log("users changed",users)
+        console.log("othermouse",otherMouses)
+    },[users])
     useEffect(() => {
-        console.log("useEffect")
         mouseClient.getMouseUpdates({}).responses.onMessage((p) => handleUpdatedMousesPositions(p))
-
+        userClient.getUsersEvents({}).responses.onMessage(uc => handleUserEvent(uc))
         addEventListener('mousemove', onMouseMove)
 
         // Each MIN_MOUSE_MSG, if the position has changed, send the new one
         const intervalId = setInterval(() => {
+            if(!isLoggedRef.current) return;
             const { x: currentX, y: currentY } = latestMousePosition.current
             const { x: previousX, y: previousY } = previousMousePosition.current
 
             if (currentX !== previousX || currentY !== previousY) {
                 previousMousePosition.current = { x: currentX, y: currentY }
-                console.log('Sent mouse position at ', latestMousePosition.current)
-                mouseClient.sendMousePosition({ userId: userId, x: currentX, y: currentY })
+                mouseClient.sendMousePosition({ userId: Number(selfIdRef.current), x: currentX, y: currentY })
             }
         }, MIN_MOUSE_MSG_INTERVAL)
 
@@ -89,7 +119,7 @@ function App() {
 
     return (
         <>
-            <LoginDialog is_logged={isLogged} login={handleLogin}></LoginDialog>
+            <LoginDialog is_logged={isLoggedRef.current} login={handleLogin}></LoginDialog>
             <ToastContainer position="top-right" autoClose={4000} hideProgressBar={true} pauseOnHover={true}></ToastContainer>
             <div className="flex h-screen">
                 {/* Library on the left */}
@@ -103,7 +133,7 @@ function App() {
                 </div>
             </div>
             {Array.from(otherMouses.values()).map((p) => (
-                <MouseCursor key={p.userId} p={p}></MouseCursor>
+                <MouseCursor key={p.userId} p={p} username={users.get(p.userId)}></MouseCursor>
             ))}
         </>
     )
