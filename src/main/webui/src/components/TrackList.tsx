@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { EditServiceClient } from '../grpc/edit.client.ts';
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport';
 import { PROXY_BASE_URL } from '../constants.ts';
+import Multitrack, { MultitrackTracks, TrackOptions } from 'wavesurfer-multitrack';
+import { Button } from './ui/button.tsx';
 
 function TrackList() {
     const [tracks, setTracks] = useState<Track[]>([]);
@@ -26,60 +28,146 @@ function TrackList() {
             .then((response) => response.json())
             .then((data) => {
                 setTracks(data);
+                console.log(data);
             })
             .catch((error) => {
                 console.error('Error while fetching tracks: ', error);
             });
+
+        const multitrack = Multitrack.create(
+            tracks
+                .map((t) => t.samples)
+                .flat()
+                .map((s) => {
+                    return {
+                        id: 1,
+                        draggable: true,
+                        startPosition: s.startTime, // start time relative to the entire multitrack
+                        url: '/audio/' + s.sample.filepath,
+                        volume: 0.95,
+                        startCue: 2,
+                        options: {
+                            waveColor: 'hsl(145, 97%, 56%)',
+                            progressColor: 'hsl(145, 97%, 56%)',
+                        },
+                        intro: {
+                            endTime: 16,
+                            label: s.sample.name,
+                            color: 'hsl(46, 87%, 20%)',
+                        },
+                    } as TrackOptions;
+                }),
+            {
+                container: document.querySelector('#container')!, // required!
+                minPxPerSec: 100, // zoom level
+                rightButtonDrag: false, // set to true to drag with right mouse button
+                cursorWidth: 4,
+                cursorColor: '#D72F21',
+                trackBackground: 'rgb(6, 9, 7)',
+                trackBorderColor: '#7C7C7C',
+                dragBounds: true,
+            },
+        );
+
+        // Events
+        multitrack.on('start-position-change', ({ id, startPosition }) => {
+            console.log(`Track ${id} start position updated to ${startPosition}`);
+        });
+
+        multitrack.on('start-cue-change', ({ id, startCue }) => {
+            console.log(`Track ${id} start cue updated to ${startCue}`);
+        });
+
+        multitrack.on('end-cue-change', ({ id, endCue }) => {
+            console.log(`Track ${id} end cue updated to ${endCue}`);
+        });
+
+        multitrack.on('intro-end-change', ({ id, endTime }) => {
+            console.log(`Track ${id} intro end updated to ${endTime}`);
+        });
+
+        multitrack.on('drop', ({ id }) => {
+            multitrack.addTrack({
+                id,
+                url: '/examples/audio/demo.wav',
+                startPosition: 0,
+                draggable: true,
+                options: {
+                    waveColor: 'hsl(25, 87%, 49%)',
+                    progressColor: 'hsl(25, 87%, 20%)',
+                },
+            });
+        });
+
+        // Play/pause button
+        function togglePlay() {
+            multitrack.isPlaying() ? multitrack.pause() : multitrack.play();
+            const button = document.querySelector('#play') as HTMLInputElement;
+            button.textContent = multitrack.isPlaying() ? 'Pause' : 'Play';
+        }
+
+        const button = document.querySelector('#play') as HTMLInputElement;
+        button.disabled = true;
+        multitrack.once('canplay', () => {
+            button.disabled = false;
+            button.onclick = togglePlay;
+        });
+
+        // Custom events for shortcuts
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case ' ':
+                    e.preventDefault();
+                    togglePlay();
+                    break;
+                case '0':
+                    multitrack.setTime(0);
+                    break;
+                case '$':
+                    multitrack.setTime(1000000);
+                    break;
+            }
+        });
+
+        // Forward/back buttons
+        // const forward = document.querySelector('#forward');
+        // forward.onclick = () => {
+        //     multitrack.setTime(multitrack.getCurrentTime() + 30);
+        // };
+        // const backward = document.querySelector('#backward');
+        // backward.onclick = () => {
+        //     multitrack.setTime(multitrack.getCurrentTime() - 30);
+        // };
+
+        // Zoom
+        // const slider = document.querySelector('input[type="range"]');
+        // slider.oninput = () => {
+        //     multitrack.zoom(slider.valueAsNumber);
+        // };
+
+        // Destroy all wavesurfer instances on unmount
+        // This should be called before calling initMultiTrack again to properly clean up
+        window.onbeforeunload = () => {
+            multitrack.destroy();
+        };
+
+        // Set sinkId
+        multitrack.once('canplay', async () => {
+            await multitrack.setSinkId('default');
+            console.log('Set sinkId to default');
+        });
+
+        return () => {
+            multitrack.destroy();
+        };
     }, []);
 
-    const handleDrop = (e: React.DragEvent, trackId: number) => {
-        e.preventDefault();
-
-        const sampleData = JSON.parse(e.dataTransfer.getData('text/plain'));
-        const newSample: SampleInTrack = JSON.parse(sampleData);
-
-        setTracks((prevTracks) =>
-            prevTracks.map((track) => {
-                if (track.id === trackId) {
-                    return {
-                        ...track,
-                        samples: [...track.samples, newSample], // Add sample to track
-                        modifiedAt: new Date(), // Update modification time
-                    };
-                }
-
-                return track;
-            }),
-        );
-    };
-
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault(); // Required for allowing drop
-    };
-
-    // @ts-ignore
-    // Calculer la durée maximale parmi toutes les tracks
-    const maxDuration = tracks.reduce((max, track) => {
-        const trackDuration = track.samples.reduce((maxSample, sample) => {
-            return Math.max(maxSample, (sample.startTime || 0) + (sample.duration || 0));
-        }, 0);
-        return Math.max(max, trackDuration);
-    }, 0);
-
-    // @ts-ignore
-    const formatTime = (time: number) => {
-        const minutes = Math.floor(time / 60);
-        const seconds = Math.floor(time % 60);
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    };
-
     return (
-        <div className="track-list grid grid-cols-1 w-full">
-            {tracks.map((track) => (
-                <div key={track.id} className="track rounded" onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, track.id)}>
-                    <TrackItem id={track.id} name={track.name} samples={track.samples} createdAt={track.createdAt} modifiedAt={track.modifiedAt} />
-                </div>
-            ))}
+        <div>
+            <div className="flex">
+                <Button id="play">Play</Button>
+            </div>
+            <div id="container"></div>;
         </div>
     );
 }
