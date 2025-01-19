@@ -3,7 +3,7 @@ package amt.dto;
 import java.time.LocalDateTime;
 
 public record UserDTO(
-        Long id,
+        Integer id,
         String name,
-        LocalDateTime createdAt
-) {}
+        LocalDateTime createdAt) {
+}

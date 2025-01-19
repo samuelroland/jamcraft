@@ -5,7 +5,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 
 @ApplicationScoped
-public class SampleRepository extends BaseRepository<Sample, Long> {
+public class SampleRepository extends BaseRepository<Sample, Integer> {
 
     public SampleRepository() {
         super(Sample.class);

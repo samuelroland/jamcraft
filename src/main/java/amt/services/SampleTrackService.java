@@ -39,30 +39,30 @@ public class SampleTrackService implements DtoConverter<SampleTrack, SampleInTra
     }
 
     @Transactional
-    public SampleInTrackDTO removeSampleTrack(Long instanceId) {
+    public SampleInTrackDTO removeSampleTrack(Integer instanceId) {
         var removed = sampleTrackRepository.findById(instanceId)
                 .orElseThrow(() -> new IllegalArgumentException("SampleTrack not found with ID: " + instanceId));
 
         sampleTrackRepository.deleteById(instanceId);
         System.out.println(
                 "Sample " + removed.getSample().getName()
-                + " with instance ID " + removed.getId()
-                + " has been removed from track " + removed.getTrack().getName());
+                        + " with instance ID " + removed.getId()
+                        + " has been removed from track " + removed.getTrack().getName());
 
         return toDTO(removed);
     }
 
     @Transactional
-    public void updateSampleTrackPosition(Long instanceId, Double newStartTime) {
+    public void updateSampleTrackPosition(Integer instanceId, Double newStartTime) {
         SampleTrack sampleTrack = sampleTrackRepository.findById(instanceId)
                 .orElseThrow(() -> new IllegalArgumentException("SampleTrack not found with ID: " + instanceId));
         Double oldStartTime = sampleTrack.getStartTime();
         sampleTrack.setStartTime(newStartTime);
         sampleTrackRepository.save(sampleTrack);
         System.out.println("Sample '" + sampleTrack.getSample().getName()
-                           + "' on track '" + sampleTrack.getTrack().getName()
-                           + "' starting at " + oldStartTime
-                           + " has been moved to " + newStartTime);
+                + "' on track '" + sampleTrack.getTrack().getName()
+                + "' starting at " + oldStartTime
+                + " has been moved to " + newStartTime);
     }
 
 }

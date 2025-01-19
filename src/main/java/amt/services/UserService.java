@@ -33,9 +33,9 @@ public class UserService implements DtoConverter<User, UserDTO> {
         return userRepository.findAll().stream().map(this::toDTO).toList();
     }
 
-    public UserDTO getUserById(Long id) {
-        return userRepository.findById(id).map(this::toDTO).orElseThrow(() ->
-                new IllegalArgumentException("User not found"));
+    public UserDTO getUserById(Integer id) {
+        return userRepository.findById(id).map(this::toDTO)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
     @Transactional
@@ -49,9 +49,9 @@ public class UserService implements DtoConverter<User, UserDTO> {
     }
 
     @Transactional
-    public UserDTO deleteUser(Long id) {
-        var user = userRepository.findById(id).map(this::toDTO).orElseThrow(() ->
-                new IllegalArgumentException("User not found with id:" + id));
+    public UserDTO deleteUser(Integer id) {
+        var user = userRepository.findById(id).map(this::toDTO)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id:" + id));
         userRepository.deleteById(id);
         System.out.println("User deleted : " + user.name() + " with id: " + user.id());
         return user;
@@ -59,7 +59,7 @@ public class UserService implements DtoConverter<User, UserDTO> {
 
     @Transactional
     public UserDTO getUserByName(String name) {
-        return userRepository.findByName(name).map(this::toDTO).orElseThrow(() ->
-                new IllegalArgumentException("User not found"));
+        return userRepository.findByName(name).map(this::toDTO)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 }

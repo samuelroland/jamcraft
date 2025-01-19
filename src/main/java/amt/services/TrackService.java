@@ -35,7 +35,8 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
         // Convert samples in the DTO to SampleTrack entities
         List<SampleTrack> sampleTracks = trackDTO.samples().stream().map(sampleInTrackDTO -> {
             Sample sample = sampleRepository.findById(sampleInTrackDTO.id())
-                    .orElseThrow(() -> new IllegalArgumentException("Sample not found for ID: " + sampleInTrackDTO.id()));
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("Sample not found for ID: " + sampleInTrackDTO.id()));
 
             SampleTrack sampleTrack = new SampleTrack();
             sampleTrack.setTrack(track); // Associate with this track
@@ -56,16 +57,14 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
                 sampleService.toDTO(sampleTrack.getSample()),
                 sampleTrack.getTrack().getId(),
                 sampleTrack.getTrack().getName(),
-                sampleTrack.getStartTime()
-        )).toList();
+                sampleTrack.getStartTime())).toList();
 
         return new TrackDTO(
                 track.getId(),
                 track.getName(),
                 track.getCreatedAt(),
                 track.getModifiedAt(),
-                sampleInTrackDTOs
-        );
+                sampleInTrackDTOs);
     }
 
     public List<TrackDTO> getAllTracks() {
@@ -76,13 +75,13 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
         return trackRepository.findAllWithSamplesLoaded().stream().map(this::toDTO).toList();
     }
 
-    public TrackDTO getTrackById(Long id) {
-        return trackRepository.findById(id).map(this::toDTO).orElseThrow(() ->
-                new IllegalArgumentException("Track " + id + " not found"));
+    public TrackDTO getTrackById(Integer id) {
+        return trackRepository.findById(id).map(this::toDTO)
+                .orElseThrow(() -> new IllegalArgumentException("Track " + id + " not found"));
     }
 
     @Transactional
-    public void updateTrackName(Long trackId, String newName) {
+    public void updateTrackName(Integer trackId, String newName) {
         Track track = trackRepository.findById(trackId)
                 .orElseThrow(() -> new IllegalArgumentException("Track not found with ID: " + trackId));
         String oldName = track.getName();
@@ -97,7 +96,7 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
     }
 
     @Transactional
-    public void deleteTrack(Long id) {
+    public void deleteTrack(Integer id) {
         trackRepository.deleteById(id);
     }
 }

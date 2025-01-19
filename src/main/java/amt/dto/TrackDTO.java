@@ -4,9 +4,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record TrackDTO(
-        Long id,
+        Integer id,
         String name,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt,
-        List<SampleInTrackDTO> samples
-) {}
+        List<SampleInTrackDTO> samples) {
+}

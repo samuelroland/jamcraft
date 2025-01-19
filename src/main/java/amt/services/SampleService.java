@@ -33,17 +33,16 @@ public class SampleService implements DtoConverter<Sample, SampleDTO> {
                 sample.getName(),
                 sample.getFilepath(),
                 sample.getDuration(),
-                sample.getCreatedAt()
-        );
+                sample.getCreatedAt());
     }
 
     public List<SampleDTO> getAllSamples() {
         return sampleRepository.findAll().stream().map(this::toDTO).toList();
     }
 
-    public SampleDTO getSampleById(Long id) {
-        return sampleRepository.findById(id).map(this::toDTO).orElseThrow(() ->
-                new IllegalArgumentException("Sample not found"));
+    public SampleDTO getSampleById(Integer id) {
+        return sampleRepository.findById(id).map(this::toDTO)
+                .orElseThrow(() -> new IllegalArgumentException("Sample not found"));
     }
 
     @Transactional
@@ -52,7 +51,7 @@ public class SampleService implements DtoConverter<Sample, SampleDTO> {
     }
 
     @Transactional
-    public void deleteSample(Long id) {
+    public void deleteSample(Integer id) {
         sampleRepository.deleteById(id);
     }
 

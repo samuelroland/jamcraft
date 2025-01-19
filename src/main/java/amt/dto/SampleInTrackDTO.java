@@ -1,9 +1,9 @@
 package amt.dto;
 
 public record SampleInTrackDTO(
-        Long id,
+        Integer id,
         SampleDTO sample,
-        Long trackId, // Do not put a TrackDTO => circular reference
+        Integer trackId, // Do not put a TrackDTO => circular reference
         String trackName,
         Double startTime) {
 }

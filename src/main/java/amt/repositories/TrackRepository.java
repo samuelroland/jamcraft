@@ -5,7 +5,7 @@ import amt.entities.Track;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class TrackRepository extends BaseRepository<Track, Long> {
+public class TrackRepository extends BaseRepository<Track, Integer> {
 
     public TrackRepository() {
         super(Track.class);

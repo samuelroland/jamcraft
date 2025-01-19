@@ -6,7 +6,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Optional;
 
 @ApplicationScoped
-public class UserRepository extends BaseRepository<User, Long> {
+public class UserRepository extends BaseRepository<User, Integer> {
 
     public UserRepository() {
         super(User.class);
