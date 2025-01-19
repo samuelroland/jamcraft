@@ -4,14 +4,13 @@ import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport';
 import { MouseServiceClient } from './grpc/mouse.client';
 import { MousePosition } from './grpc/mouse';
 import { UsersServiceClient } from './grpc/users.client.ts';
-import { SessionAction } from './grpc/users.ts';
+import { SessionAction, UserChange } from './grpc/users.ts';
 import TrackList from './components/TrackList';
 import { MIN_MOUSE_MSG_INTERVAL, PROXY_BASE_URL } from './constants';
 import Library from './components/Library';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { LoginDialog } from './components/LoginDialog.tsx';
 import MouseCursor from './components/MouseCursor.tsx';
+import { User } from '../types.ts';
 
 function App() {
     const transport = useMemo(
@@ -26,13 +25,13 @@ function App() {
     const mouseClient = useMemo(() => new MouseServiceClient(transport), [transport]);
     const userClient = useMemo(() => new UsersServiceClient(transport), [transport]);
 
-    // @ts-ignore
     const [otherMouses, setOtherMouses] = useState<Map<number, MousePosition>>(new Map());
-    const [users, setUsers] = useState<Map<number, String>>(new Map());
+    const [users, setUsers] = useState<Map<number, string>>(new Map());
 
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const [selfId, setSelfId] = useState<number>(10);
+    const [selfId, setSelfId] = useState<number>(0);
     const selfIdRef = useRef(selfId);
+    const [selfName, setSelfName] = useState<string>('');
     const [isLogged, setIsLogged] = useState(false);
     const isLoggedRef = useRef(isLogged);
     // With the help of Copilot, I found that this copy is absolutely necessary
@@ -46,16 +45,18 @@ function App() {
         setMousePosition(newPosition);
         latestMousePosition.current = newPosition; // this copy is important
     };
-    const handleLogin = (username) => {
+    const handleLogin = (username: string) => {
         const promise = userClient.join({ name: username });
         promise
             .then((call) => {
                 console.log(call.response.users);
-                for (let user of call.response.users) {
+                for (const user of call.response.users) {
                     console.log(username, user.name);
                     console.log(user.name == username);
                     if (user.name == username) {
                         selfIdRef.current = Number(user.id);
+                        setSelfName(user.name);
+                        localStorage.setItem('user', JSON.stringify(user));
                     }
                     setUsers((u) => {
                         // Create a new Map to maintain immutability
@@ -72,7 +73,7 @@ function App() {
     };
 
     const handleUpdatedMousesPositions = (p: MousePosition) => {
-        console.log('Got new position', p);
+        // console.log('Got new position', p);
         if (p.userId == selfIdRef.current) {
             return;
         }
@@ -83,7 +84,7 @@ function App() {
             return newMap;
         });
     };
-    const handleUserEvent = (uc) => {
+    const handleUserEvent = (uc: UserChange) => {
         if (uc.action == SessionAction.JOIN) {
             setUsers((users) => {
                 const newMap = new Map(users);
@@ -103,6 +104,15 @@ function App() {
         mouseClient.getMouseUpdates({}).responses.onMessage((p) => handleUpdatedMousesPositions(p));
         userClient.getUsersEvents({}).responses.onMessage((uc) => handleUserEvent(uc));
         addEventListener('mousemove', onMouseMove);
+
+        // Try to load user persisted in local storage
+        const user = localStorage.getItem('user');
+        if (user) {
+            const u = JSON.parse(user) as User;
+            setIsLogged(true);
+            setSelfId(u.id); // TODO: we could refactor with a single user object
+            setSelfName(u.name);
+        }
 
         // Each MIN_MOUSE_MSG, if the position has changed, send the new one
         const intervalId = setInterval(() => {
@@ -124,12 +134,16 @@ function App() {
 
     return (
         <>
-            <LoginDialog is_logged={isLoggedRef.current} login={handleLogin}></LoginDialog>
-            <ToastContainer position="top-right" autoClose={4000} hideProgressBar={true} pauseOnHover={true}></ToastContainer>
+            {localStorage.getItem('user') == undefined ? <LoginDialog is_logged={isLoggedRef.current} login={handleLogin}></LoginDialog> : null}
             <div className="flex h-screen w-full overflow-hidden">
                 {/* Library on the left */}
                 <div className="min-w-80 h-full bg-gray-100 p-4 relative">
                     <Library />
+                    {selfId != 0 ? (
+                        <div>
+                            Logged as <span className="font-bold">{selfName}</span>
+                        </div>
+                    ) : null}
                 </div>
 
                 {/* TrackList on the right */}
@@ -138,7 +152,7 @@ function App() {
                 </div>
             </div>
             {Array.from(otherMouses.values()).map((p) => (
-                <MouseCursor key={p.userId} p={p} username={users.get(p.userId)}></MouseCursor>
+                <MouseCursor key={p.userId} p={p} username={users.get(p.userId) ?? '?'}></MouseCursor>
             ))}
         </>
     );
