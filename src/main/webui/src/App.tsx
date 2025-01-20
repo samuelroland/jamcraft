@@ -31,7 +31,6 @@ function App() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const [selfId, setSelfId] = useState<number>(0);
     const selfIdRef = useRef(selfId);
-    const [selfName, setSelfName] = useState<string>('');
     const [isLogged, setIsLogged] = useState(false);
     const isLoggedRef = useRef(isLogged);
     // With the help of Copilot, I found that this copy is absolutely necessary
@@ -55,7 +54,6 @@ function App() {
                     console.log(user.name == username);
                     if (user.name == username) {
                         selfIdRef.current = Number(user.id);
-                        setSelfName(user.name);
                         localStorage.setItem('user', JSON.stringify(user));
                     }
                     setUsers((u) => {
@@ -93,13 +91,19 @@ function App() {
             });
         }
         if (uc.action == SessionAction.LEAVE) {
-            console.log('User left');
+            setUsers((users) => {
+                const newMap = new Map(users);
+                newMap.delete(uc.userId);
+                return newMap;
+            });
+            setOtherMouses((ms) =>{
+                const newMap = new Map(ms)
+                newMap.delete(uc.userId);
+                return newMap;
+            });
         }
     };
-    useEffect(() => {
-        console.log('users changed', users);
-        console.log('othermouse', otherMouses);
-    }, [users]);
+
     useEffect(() => {
         mouseClient.getMouseUpdates({}).responses.onMessage((p) => handleUpdatedMousesPositions(p));
         userClient.getUsersEvents({}).responses.onMessage((uc) => handleUserEvent(uc));
@@ -110,8 +114,7 @@ function App() {
         if (user) {
             const u = JSON.parse(user) as User;
             setIsLogged(true);
-            setSelfId(u.id); // TODO: we could refactor with a single user object
-            setSelfName(u.name);
+            selfIdRef.current = u.id// TODO: we could refactor with a single user object
         }
 
         // Each MIN_MOUSE_MSG, if the position has changed, send the new one
@@ -139,9 +142,9 @@ function App() {
                 {/* Library on the left */}
                 <div className="min-w-80 h-full bg-gray-100 p-4 relative">
                     <Library />
-                    {selfId != 0 ? (
+                    {selfIdRef.current != 0 ? (
                         <div>
-                            Logged as <span className="font-bold">{selfName}</span>
+                            Logged as <span className="font-bold">{users.get(selfIdRef.current)}</span>
                         </div>
                     ) : null}
                 </div>
