@@ -2,6 +2,7 @@ package amt.grpc;
 
 import amt.*;
 import amt.dto.UserDTO;
+import amt.jms.NotificationConsumer;
 import amt.services.UserService;
 import com.google.protobuf.Empty;
 import io.quarkus.grpc.GrpcService;
@@ -9,6 +10,7 @@ import io.smallrye.common.annotation.RunOnVirtualThread;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.subscription.MultiEmitter;
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -18,8 +20,28 @@ public class UsersGrpcService implements UsersService {
     @Inject
     UserService userService;
 
+    @Inject
+    NotificationConsumer notificationConsumer;
+
     // Active emitters for streaming sample positions
     private final CopyOnWriteArrayList<MultiEmitter<? super UserChange>> usersEmitters = new CopyOnWriteArrayList<>();
+
+
+    @PostConstruct
+    public void startListeningToNotifications() {
+        // Subscribe to the NotificationConsumer's stream
+        notificationConsumer.getNotificationStream()
+                .subscribe().with(notification -> {
+                    // Convert the notification to a UserChange
+                    UserChange userChange = UserChange.newBuilder()
+                            .setAction(SessionAction.LEAVE)
+                            .setName(notification)
+                            .build();
+
+                    // Emit the UserChange to all connected clients
+                    usersEmitters.forEach(emitter -> emitter.emit(userChange));
+                });
+    }
 
     // Test command: grpcurl -plaintext -d '{\"name\": \"Bob\"}' localhost:9000 users.UsersService/Join
     @RunOnVirtualThread
@@ -45,28 +67,6 @@ public class UsersGrpcService implements UsersService {
             return Uni.createFrom().item(getUsersList());
         } catch (IllegalArgumentException e) {
             System.err.println("Failed to join: " + e.getMessage());
-            return Uni.createFrom().failure(e);
-        }
-    }
-
-    // Test command: grpcurl -plaintext -d '{\"id\": 1}' localhost:9000 users.UsersService/Leave
-    @RunOnVirtualThread
-    @Override
-    public Uni<UsersList> leave(UserId request) {
-        try {
-            var userLeft = userService.deleteUser(request.getId());
-
-            // Notify all connected clients about the user leaving
-            var userChange = UserChange.newBuilder()
-                    .setAction(SessionAction.LEAVE)
-                    .setUserId(userLeft.id())
-                    .setName(userLeft.name())
-                    .build();
-
-            usersEmitters.forEach(emitter -> emitter.emit(userChange));
-            return Uni.createFrom().item(getUsersList());
-        } catch (IllegalArgumentException e) {
-            System.err.println("Failed to leave: " + e.getMessage());
             return Uni.createFrom().failure(e);
         }
     }

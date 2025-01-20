@@ -8,7 +8,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-@Path("users")
+@Path("leave")
 public class UserResource {
 
     @Inject
@@ -17,19 +17,25 @@ public class UserResource {
     @Inject
     NotificationProducer notificationProducer;
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAllUsers() {
-        return Response.ok(userService.getAllUsers()).build();
-    }
-
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response userJoin(UserDTO userDTO) {
-        var user = new UserDTO(null, userDTO.name(), null);
-        // Send a notification
-        notificationProducer.sendNotification("User " + userDTO.name() + " joined session.");
-        return Response.ok(userService.saveUser(user)).build();
+    @Consumes(MediaType.APPLICATION_JSON)
+    // Test command: curl -X POST http://localhost:8080/leave -H "Content-Type: application/json" -d '{"id": "1", "name": "spy"}'
+    public Response userLeave(UserDTO user) {
+        if (user == null || user.id() == null || user.name() == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"Invalid user data\"}")
+                    .build();
+        }
+        try {
+            userService.deleteUser(user.id());
+            notificationProducer.sendNotification(user.name());
+            return Response.ok("{\"status\": \"User " + user.name() + " removed successfully\"}").build();
+        } catch (Exception e) {
+            System.err.println("Failed to leave: " + e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
+                    .build();
+        }
     }
 }

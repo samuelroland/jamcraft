@@ -14,7 +14,6 @@ public class NotificationProducer {
     public void sendNotification(String message) {
         try (JMSContext context = connectionFactory.createContext(JMSContext.AUTO_ACKNOWLEDGE)) {
             context.createProducer().send(context.createQueue("notifications"), message);
-            System.out.println("Sent notification: " + message);
         }
     }
 }

@@ -19,12 +19,4 @@ public class UserRepository extends BaseRepository<User, Integer> {
                 .getResultStream()
                 .findFirst();
     }
-
-    public boolean existsByName(String name) {
-        String query = "SELECT COUNT(u) FROM User u WHERE u.name = :name";
-        Long count = entityManager.createQuery(query, Long.class)
-                .setParameter("name", name)
-                .getSingleResult();
-        return count > 0;
-    }
 }
