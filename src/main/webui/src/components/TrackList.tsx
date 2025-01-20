@@ -200,7 +200,7 @@ function TrackList() {
             <div className="flex">
                 <Button id="play">Play</Button>
             </div>
-            <div id="container"></div>;
+            <div id="container"></div>
         </div>
     );
 }
