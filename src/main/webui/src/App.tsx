@@ -11,6 +11,8 @@ import Library from './components/Library';
 import { LoginDialog } from './components/LoginDialog.tsx';
 import MouseCursor from './components/MouseCursor.tsx';
 import { User } from '../types.ts';
+import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
 
 function App() {
     const transport = useMemo(
@@ -29,9 +31,9 @@ function App() {
     const [users, setUsers] = useState<Map<number, string>>(new Map());
 
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const [selfId, setSelfId] = useState<number>(0);
+    const [selfId] = useState<number>(0);
     const selfIdRef = useRef(selfId);
-    const [isLogged, setIsLogged] = useState(false);
+    const [isLogged] = useState(false);
     const isLoggedRef = useRef(isLogged);
     // With the help of Copilot, I found that this copy is absolutely necessary
     // If we remove it, setInterval code will not be called when we continuously move the mouse
@@ -44,26 +46,34 @@ function App() {
         setMousePosition(newPosition);
         latestMousePosition.current = newPosition; // this copy is important
     };
+
+    const handleLogout = (event) => {
+    console.log("event fired")
+        const promise = userClient.leave({userId:selfIdRef.current});
+        promise.catch((error) => {
+            console.log(error);
+        });
+    }
+
     const handleLogin = (username: string) => {
         const promise = userClient.join({ name: username });
         promise
             .then((call) => {
-                console.log(call.response.users);
                 for (const user of call.response.users) {
-                    console.log(username, user.name);
-                    console.log(user.name == username);
+
                     if (user.name == username) {
-                        selfIdRef.current = Number(user.id);
+                        selfIdRef.current = user.id;
                         localStorage.setItem('user', JSON.stringify(user));
                     }
                     setUsers((u) => {
                         // Create a new Map to maintain immutability
                         const newMap = new Map(u);
-                        newMap.set(Number(user.id), user.name);
+                        newMap.set(user.id, user.name);
                         return newMap;
                     });
                 }
                 isLoggedRef.current = true;
+                toast.success("Successfully logged as " + username)
             })
             .catch((error) => {
                 console.log(error);
@@ -83,12 +93,14 @@ function App() {
         });
     };
     const handleUserEvent = (uc: UserChange) => {
+    console.log("uc",uc)
         if (uc.action == SessionAction.JOIN) {
             setUsers((users) => {
                 const newMap = new Map(users);
-                newMap.set(Number(uc.userId), uc.name);
+                newMap.set(uc.userId, uc.name);
                 return newMap;
             });
+            toast.info(uc.name + " joined")
         }
         if (uc.action == SessionAction.LEAVE) {
             setUsers((users) => {
@@ -101,6 +113,8 @@ function App() {
                 newMap.delete(uc.userId);
                 return newMap;
             });
+            toast.info(uc.name + " disconnected")
+
         }
     };
 
@@ -108,7 +122,7 @@ function App() {
         mouseClient.getMouseUpdates({}).responses.onMessage((p) => handleUpdatedMousesPositions(p));
         userClient.getUsersEvents({}).responses.onMessage((uc) => handleUserEvent(uc));
         addEventListener('mousemove', onMouseMove);
-
+        addEventListener('beforeunload',handleLogout)
         // Try to load user persisted in local storage
         const user = localStorage.getItem('user');
         if (user) {
@@ -124,7 +138,7 @@ function App() {
 
             if (currentX !== previousX || currentY !== previousY) {
                 previousMousePosition.current = { x: currentX, y: currentY };
-                mouseClient.sendMousePosition({ userId: Number(selfIdRef.current), x: currentX, y: currentY });
+                mouseClient.sendMousePosition({ userId: selfIdRef.current, x: currentX, y: currentY });
             }
         }, MIN_MOUSE_MSG_INTERVAL);
 
@@ -136,6 +150,7 @@ function App() {
 
     return (
         <>
+            <Toaster position="top-right" richColors expand="true"/>
             {localStorage.getItem('user') == undefined ? <LoginDialog is_logged={isLoggedRef.current} login={handleLogin}></LoginDialog> : null}
             <div className="flex h-screen w-full overflow-hidden">
                 {/* Library on the left */}
