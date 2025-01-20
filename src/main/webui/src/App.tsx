@@ -113,8 +113,7 @@ function App() {
         const user = localStorage.getItem('user');
         if (user) {
             const u = JSON.parse(user) as User;
-            setIsLogged(true);
-            selfIdRef.current = u.id// TODO: we could refactor with a single user object
+           handleLogin(u.name)
         }
 
         // Each MIN_MOUSE_MSG, if the position has changed, send the new one
