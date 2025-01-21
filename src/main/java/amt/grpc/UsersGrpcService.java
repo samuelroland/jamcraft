@@ -31,11 +31,12 @@ public class UsersGrpcService implements UsersService {
     public void startListeningToNotifications() {
         // Subscribe to the NotificationConsumer's stream
         notificationConsumer.getNotificationStream()
-                .subscribe().with(notification -> {
+                .subscribe().with(user -> {
                     // Convert the notification to a UserChange
                     UserChange userChange = UserChange.newBuilder()
                             .setAction(SessionAction.LEAVE)
-                            .setName(notification)
+                            .setUserId(user.id())
+                            .setName(user.name())
                             .build();
 
                     // Emit the UserChange to all connected clients

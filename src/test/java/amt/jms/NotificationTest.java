@@ -1,5 +1,6 @@
 package amt.jms;
 
+import amt.dto.UserDTO;
 import jakarta.inject.Inject;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSConsumer;
@@ -7,6 +8,8 @@ import jakarta.jms.JMSContext;
 import jakarta.jms.Queue;
 import org.junit.jupiter.api.Test;
 import io.quarkus.test.junit.QuarkusTest;
+
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -27,14 +30,14 @@ public class NotificationTest {
             JMSConsumer consumer = context.createConsumer(queue);
 
             // Send a message
-            String expectedMessage = "Hello, ActiveMQ!";
-            producer.sendNotification(expectedMessage);
+            UserDTO user  = new UserDTO(1, "John", LocalDateTime.now());
+            producer.sendNotification(user);
 
             // Receive the message
             String receivedMessage = consumer.receiveBody(String.class, 2000);
 
             // Assert that the received message matches the sent message
-            assertEquals(expectedMessage, receivedMessage, "The received message should match the sent message");
+            assertEquals(user, receivedMessage, "The received message should match the sent message");
         }
     }
 }

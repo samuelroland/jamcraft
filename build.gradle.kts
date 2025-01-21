@@ -14,6 +14,7 @@ val quarkusPlatformVersion: String by project
 
 dependencies {
     implementation("io.quarkiverse.artemis:quarkus-artemis-jms:3.5.1")
+    implementation("com.google.code.gson:gson:2.11.0")
     implementation(enforcedPlatform("$quarkusPlatformGroupId:$quarkusPlatformArtifactId:$quarkusPlatformVersion"))
     implementation("io.quarkus:quarkus-grpc")
     implementation("io.quarkus:quarkus-hibernate-orm")

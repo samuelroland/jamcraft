@@ -1,5 +1,6 @@
 package amt.jms;
 
+import amt.dto.UserDTO;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -28,15 +29,15 @@ public class NotificationConsumer {
         consumer = context.createConsumer(context.createQueue("notifications"));
     }
 
-    public Multi<String> getNotificationStream() {
+    public Multi<UserDTO> getNotificationStream() {
         // Create a Multi stream from JMS consumer
         return Multi.createFrom().emitter(emitter -> {
             new Thread(() -> {
                 try {
                     while (true) {
-                        String message = consumer.receiveBody(String.class);
-                        LOG.info("Received notification: " + message);
-                        emitter.emit(message);
+                        UserDTO user = consumer.receiveBody(UserDTO.class);
+                        LOG.info("Received notification: " + user);
+                        emitter.emit(user);
                     }
                 } catch (Exception e) {
                     LOG.error("Error receiving message", e);
