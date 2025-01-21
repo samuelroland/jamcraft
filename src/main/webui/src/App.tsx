@@ -43,12 +43,10 @@ function App() {
         latestMousePosition.current = newPosition; // this copy is important
     };
 
-    const handleLogout = () => {
-        // console.log('event fired');
-        // const promise = userClient.leave({ userId: selfIdRef.current });
-        // promise.catch((error) => {
-        //     console.log(error);
-        // });
+    const handleLogout = (event) => {
+        const url = "/leave";
+        const data = JSON.stringify({id:selfIdRef.current})
+        navigator.sendBeacon(url,data);
     };
 
     const handleLogin = (username: string) => {
