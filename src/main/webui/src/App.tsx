@@ -1,31 +1,27 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import './App.css';
-import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport';
 import { MouseServiceClient } from './grpc/mouse.client';
 import { MousePosition } from './grpc/mouse';
 import { UsersServiceClient } from './grpc/users.client.ts';
 import { SessionAction, UserChange } from './grpc/users.ts';
 import TrackList from './components/TrackList';
-import { MIN_MOUSE_MSG_INTERVAL, PROXY_BASE_URL } from './constants';
+import { MIN_MOUSE_MSG_INTERVAL } from './constants';
 import Library from './components/Library';
 import { LoginDialog } from './components/LoginDialog.tsx';
 import MouseCursor from './components/MouseCursor.tsx';
 import { User } from '../types.ts';
-import { Toaster } from "@/components/ui/sonner"
-import { toast } from "sonner"
+import { Toaster } from '@/components/ui/sonner';
+import { toast } from 'sonner';
+import { getGrpcTransport } from './lib/utils.ts';
 
 function App() {
-    const transport = useMemo(
-        () =>
-            new GrpcWebFetchTransport({
-                baseUrl: PROXY_BASE_URL,
-                format: 'binary',
-            }),
-        [],
-    );
-
+    const transport = getGrpcTransport();
     const mouseClient = useMemo(() => new MouseServiceClient(transport), [transport]);
     const userClient = useMemo(() => new UsersServiceClient(transport), [transport]);
+
+    // A way to abort requests on component destroy - useful for HMR
+    const controller = new AbortController();
+    const { signal } = controller;
 
     const [otherMouses, setOtherMouses] = useState<Map<number, MousePosition>>(new Map());
     const [users, setUsers] = useState<Map<number, string>>(new Map());
@@ -47,20 +43,19 @@ function App() {
         latestMousePosition.current = newPosition; // this copy is important
     };
 
-    const handleLogout = (event) => {
-    console.log("event fired")
-        const promise = userClient.leave({userId:selfIdRef.current});
-        promise.catch((error) => {
-            console.log(error);
-        });
-    }
+    const handleLogout = () => {
+        // console.log('event fired');
+        // const promise = userClient.leave({ userId: selfIdRef.current });
+        // promise.catch((error) => {
+        //     console.log(error);
+        // });
+    };
 
     const handleLogin = (username: string) => {
-        const promise = userClient.join({ name: username });
+        const promise = userClient.join({ name: username }, { timeout: 2000, abort: signal });
         promise
             .then((call) => {
                 for (const user of call.response.users) {
-
                     if (user.name == username) {
                         selfIdRef.current = user.id;
                         localStorage.setItem('user', JSON.stringify(user));
@@ -73,7 +68,7 @@ function App() {
                     });
                 }
                 isLoggedRef.current = true;
-                toast.success("Successfully logged as " + username)
+                toast.success('Successfully logged as ' + username);
             })
             .catch((error) => {
                 console.log(error);
@@ -93,14 +88,14 @@ function App() {
         });
     };
     const handleUserEvent = (uc: UserChange) => {
-    console.log("uc",uc)
+        console.log('uc', uc);
         if (uc.action == SessionAction.JOIN) {
             setUsers((users) => {
                 const newMap = new Map(users);
                 newMap.set(uc.userId, uc.name);
                 return newMap;
             });
-            toast.info(uc.name + " joined")
+            toast.info(uc.name + ' joined');
         }
         if (uc.action == SessionAction.LEAVE) {
             setUsers((users) => {
@@ -108,26 +103,25 @@ function App() {
                 newMap.delete(uc.userId);
                 return newMap;
             });
-            setOtherMouses((ms) =>{
-                const newMap = new Map(ms)
+            setOtherMouses((ms) => {
+                const newMap = new Map(ms);
                 newMap.delete(uc.userId);
                 return newMap;
             });
-            toast.info(uc.name + " disconnected")
-
+            toast.info(uc.name + ' disconnected');
         }
     };
 
     useEffect(() => {
-        mouseClient.getMouseUpdates({}).responses.onMessage((p) => handleUpdatedMousesPositions(p));
-        userClient.getUsersEvents({}).responses.onMessage((uc) => handleUserEvent(uc));
+        mouseClient.getMouseUpdates({}, { timeout: 10000000, abort: signal }).responses.onMessage((p) => handleUpdatedMousesPositions(p));
+        userClient.getUsersEvents({}, { timeout: 10000000, abort: signal }).responses.onMessage((uc) => handleUserEvent(uc));
         addEventListener('mousemove', onMouseMove);
-        addEventListener('beforeunload',handleLogout)
+        addEventListener('beforeunload', handleLogout);
         // Try to load user persisted in local storage
         const user = localStorage.getItem('user');
         if (user) {
             const u = JSON.parse(user) as User;
-           handleLogin(u.name)
+            handleLogin(u.name);
         }
 
         // Each MIN_MOUSE_MSG, if the position has changed, send the new one
@@ -138,11 +132,12 @@ function App() {
 
             if (currentX !== previousX || currentY !== previousY) {
                 previousMousePosition.current = { x: currentX, y: currentY };
-                mouseClient.sendMousePosition({ userId: selfIdRef.current, x: currentX, y: currentY });
+                mouseClient.sendMousePosition({ userId: selfIdRef.current, x: currentX, y: currentY }, { timeout: 100, abort: signal });
             }
         }, MIN_MOUSE_MSG_INTERVAL);
 
         return () => {
+            controller.abort();
             clearInterval(intervalId);
             removeEventListener('mousemove', onMouseMove);
         };
@@ -150,7 +145,7 @@ function App() {
 
     return (
         <>
-            <Toaster position="top-right" richColors expand="true"/>
+            <Toaster position="top-right" richColors expand={true} />
             {localStorage.getItem('user') == undefined ? <LoginDialog is_logged={isLoggedRef.current} login={handleLogin}></LoginDialog> : null}
             <div className="flex h-screen w-full overflow-hidden">
                 {/* Library on the left */}
