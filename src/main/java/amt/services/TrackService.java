@@ -91,8 +91,13 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
     }
 
     @Transactional
-    public void saveTrack(TrackDTO trackDTO) {
-        trackRepository.save(fromDTO(trackDTO));
+    public TrackDTO saveTrack(TrackDTO trackDTO) {
+        var track = trackRepository.save(fromDTO(trackDTO));
+
+        if(track.getName().isEmpty()){
+            track.setName("Track " + track.getId());
+        }
+        return toDTO(track);
     }
 
     @Transactional

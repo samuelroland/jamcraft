@@ -9,34 +9,54 @@ option java_package = "amt";
 package edit;
 
 service EditService {
-    // Server-side streaming to broadcast positions of samples changed by others
-    rpc GetSamplePositions(google.protobuf.Empty) returns (stream SampleInfo);
-    // Unary sending to let clients change position of samples
+    // Change the sample position on a track
     rpc ChangeSamplePosition(SampleInfo) returns (google.protobuf.Empty);
-    // Unary sending to let clients remove a sample from the project, giving the samples_tracks.id !
+
+    // Removes a sample from a track
     rpc RemoveSample(SampleInstanceId) returns (google.protobuf.Empty);
 
-    // Server-side streaming to broadcast updated tracks, it allows to update track names in live
-    rpc GetUpdatedTracks(google.protobuf.Empty) returns (stream TrackInfo);
-    // Unary sending to update track info or create one
-    rpc ChangeTrackInfo(TrackInfo) returns (google.protobuf.Empty);
+    // Update track name
+    rpc UpdateTrackName(TrackInfo) returns (google.protobuf.Empty);
 
-    // Server-side streaming to broadcast new sample uploads, useful to update the local library
-    rpc GetSampleUploads(google.protobuf.Empty) returns (stream SampleInfo);
+    // Adds a track on the page. Gives it a default name if not specified
+    rpc AddTrack(TrackName) returns (google.protobuf.Empty);
+
+    // Server-side streaming to broadcast edit events
+    rpc GetEditEvents(UserId) returns (stream SampleInfo);
+}
+
+enum EditAction {
+    UNSPECIFIED = 0;
+    CREATE_TRACK = 1;
+    UPDATE_TRACK = 2;
+}
+
+message UserId {
+    uint32 id = 1;
 }
 
 message SampleInstanceId {
     uint32 instanceId = 1;// sample_tracks.id !
+    uint32 userId = 2;
 }
 
 message SampleInfo {
-    uint32 instanceId = 1;// sample_tracks.id !
-    uint32 sampleId = 2;
-    uint32 trackId = 3;
-    double startTime = 4;
+    EditAction action = 1;
+    uint32 userId = 2;
+    uint32 instanceId = 3;// sample_tracks.id !
+    uint32 sampleId = 4;
+    uint32 trackId = 5;
+    string trackName = 6;
+    double startTime = 7;
 }
 
 message TrackInfo {
     uint32 trackId = 1;
     string name = 2;
+    uint32 userId = 3;
+}
+
+message TrackName {
+    string name = 1;
+    uint32 userId = 2;
 }

@@ -10,7 +10,6 @@ import jakarta.jms.JMSConsumer;
 import jakarta.jms.JMSContext;
 import org.jboss.logging.Logger;
 import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.unchecked.Unchecked;
 
 @ApplicationScoped
 public class NotificationConsumer {
