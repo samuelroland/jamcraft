@@ -2,45 +2,37 @@ package amt.grpc;
 
 import amt.MousePosition;
 import amt.MouseService;
+import amt.MouseSubscription;
 import com.google.protobuf.Empty;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.subscription.MultiEmitter;
-import java.util.concurrent.CopyOnWriteArrayList;
+import io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor;
 
 @GrpcService
 public class MouseGrpcService implements MouseService {
 
-
-    // A thread-safe list of active emitters for streaming updates
-    private final CopyOnWriteArrayList<MultiEmitter<? super MousePosition>> emitters = new CopyOnWriteArrayList<>();
+    // BroadcastProcessor for hot streaming of mouse positions
+    private final BroadcastProcessor<MousePosition> processor = BroadcastProcessor.create();
 
     @Override
     public Uni<Empty> sendMousePosition(MousePosition position) {
-        // Broadcast the received position to all active streams
-        emitters.forEach(emitter -> {
-            try {
-                emitter.emit(position);
-            } catch (Exception e) {
-                System.err.println("Error emitting to a client: " + e.getMessage());
-            }
-        });
+        // Emit the new mouse position to the processor
+        try {
+            processor.onNext(position);
+        } catch (Exception e) {
+            System.err.println("Error broadcasting mouse position: " + e.getMessage());
+        }
 
         return Uni.createFrom().item(Empty.getDefaultInstance());
     }
 
+    // Test command:
     @Override
-    public Multi<MousePosition> getMouseUpdates(Empty request) {
-        return Multi.createFrom().emitter(emitter -> {
-            // Add the emitter to the active list
-            emitters.add(emitter);
+    public Multi<MousePosition> getMouseUpdates(MouseSubscription request) {
+        int userId = request.getUserId();
 
-            // Remove the emitter when the client disconnects
-            emitter.onTermination(() -> {
-                System.out.println("Client disconnected from MouseUpdates");
-                emitters.remove(emitter);
-            });
-        });
+        // Return a filtered stream: exclude updates from the current user
+        return processor.filter(position -> position.getUserId() != userId);
     }
 }

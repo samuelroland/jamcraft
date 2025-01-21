@@ -1,6 +1,5 @@
 package amt.rest;
 
-import amt.dto.UserDTO;
 import amt.jms.NotificationProducer;
 import amt.services.UserService;
 import com.google.gson.Gson;
