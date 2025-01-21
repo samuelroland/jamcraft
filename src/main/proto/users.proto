@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/empty.proto";
-
 option java_multiple_files = true;
 option java_package = "amt";
 
@@ -11,7 +9,7 @@ service UsersService {
     // Unary sending to as a client to join the project with a name and get back a list of existing users (including itself)
     rpc Join(UserName) returns (UsersList);
     // Server-side streaming to broadcast users joining or leaving
-    rpc GetUsersEvents(google.protobuf.Empty) returns (stream UserChange);
+    rpc GetUsersEvents(UserSubscription) returns (stream UserChange);
 
 }
 
@@ -38,4 +36,8 @@ message UserChange {
     SessionAction action = 1;
     uint32 userId = 2;
     string name = 3;
+}
+
+message UserSubscription {
+    uint32 userId = 1;
 }

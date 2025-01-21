@@ -27,7 +27,7 @@ public class MouseGrpcService implements MouseService {
         return Uni.createFrom().item(Empty.getDefaultInstance());
     }
 
-    // Test command:
+    // Test command: grpcurl -plaintext  -d '{\"userId\": 2}'localhost:9000 mouse.MouseService/GetMouseUpdates
     @Override
     public Multi<MousePosition> getMouseUpdates(MouseSubscription request) {
         int userId = request.getUserId();

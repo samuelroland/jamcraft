@@ -4,15 +4,13 @@ import amt.*;
 import amt.dto.UserDTO;
 import amt.jms.NotificationConsumer;
 import amt.services.UserService;
-import com.google.protobuf.Empty;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.common.annotation.RunOnVirtualThread;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.subscription.MultiEmitter;
+import io.smallrye.mutiny.operators.multi.processors.BroadcastProcessor;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @GrpcService
 public class UsersGrpcService implements UsersService {
@@ -23,8 +21,8 @@ public class UsersGrpcService implements UsersService {
     @Inject
     NotificationConsumer notificationConsumer;
 
-    // Active emitters for streaming sample positions
-    private final CopyOnWriteArrayList<MultiEmitter<? super UserChange>> usersEmitters = new CopyOnWriteArrayList<>();
+    // BroadcastProcessor for hot streaming user updates
+    private final BroadcastProcessor<UserChange> processor = BroadcastProcessor.create();
 
 
     @PostConstruct
@@ -40,7 +38,7 @@ public class UsersGrpcService implements UsersService {
                             .build();
 
                     // Emit the UserChange to all connected clients
-                    usersEmitters.forEach(emitter -> emitter.emit(userChange));
+                    processor.onNext(userChange);
                 });
     }
 
@@ -64,7 +62,7 @@ public class UsersGrpcService implements UsersService {
                     .setName(newUser.name())
                     .build();
 
-            usersEmitters.forEach(emitter -> emitter.emit(userChange));
+            processor.onNext(userChange);
             return Uni.createFrom().item(getUsersList());
         } catch (IllegalArgumentException e) {
             System.err.println("Failed to join: " + e.getMessage());
@@ -72,13 +70,11 @@ public class UsersGrpcService implements UsersService {
         }
     }
 
-    // Test command: grpcurl -plaintext localhost:9000 users.UsersService/GetUsersEvents
+    // Test command: grpcurl -plaintext -d '{\"userId\": 2}' localhost:9000 users.UsersService/GetUsersEvents
     @Override
-    public Multi<UserChange> getUsersEvents(Empty request) {
-        return Multi.createFrom().emitter(emitter -> {
-            usersEmitters.add(emitter);
-            emitter.onTermination(() -> usersEmitters.remove(emitter));
-        });
+    public Multi<UserChange> getUsersEvents(UserSubscription request) {
+        int id = request.getUserId();
+        return processor.filter(user -> user.getUserId() != id);
     }
 
     private UsersList getUsersList() {
