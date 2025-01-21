@@ -1,13 +1,13 @@
 import { Button } from './ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 
-export function LoginDialog({ is_logged, login }) {
+export function LoginDialog({ is_logged, login }: { is_logged: boolean; login: (username: string) => void }) {
     const [username, setUsername] = useState('');
 
-    const handleChange = (e) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setUsername(e.target.value);
     };
 
