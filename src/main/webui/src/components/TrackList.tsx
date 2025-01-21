@@ -1,24 +1,30 @@
 import { SampleInTrack, Track } from './../../types.ts';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { EditServiceClient } from '../grpc/edit.client.ts';
-import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport';
-import { PROXY_BASE_URL } from '../constants.ts';
 import Multitrack, { TrackOptions } from 'wavesurfer-multitrack';
 import { Button } from './ui/button.tsx';
+import { getGrpcTransport } from '../lib/utils.ts';
+import { MIN_SAMPLE_POSITION_MSG_INTERVAL } from '../constants.ts';
+import { SampleInfo } from '../grpc/edit.ts';
 
 function TrackList() {
     const [samplesInTrack, setSamplesInTrack] = useState<SampleInTrack[]>([]);
     const [firstUserInteraction, setFirstUserInteraction] = useState(false);
-
-    const transport = useMemo(
-        () =>
-            new GrpcWebFetchTransport({
-                baseUrl: PROXY_BASE_URL,
-                format: 'binary',
-            }),
-        [],
-    );
+    const transport = getGrpcTransport();
     const editClient = useMemo(() => new EditServiceClient(transport), [transport]);
+
+    // A way to abort requests on component destroy - useful for HMR
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    // Buffering grpc calls to changeSamplePosition
+    const [movedSamplePos, setMovedSamplePos] = useState<SampleInfo>({ instanceId: 0, sampleId: 0, startTime: 0, trackId: 0 }); // current moved sample pos
+    const mspCopy = useRef(movedSamplePos); // just a copy for reactivity...
+    const lastSentMovedSamplePos = useRef(movedSamplePos); // the last one sent via Grpc, so we don't send too requests too often
+
+    // Received from another client
+    const [lastPosApplied, setLastPosApplied] = useState<SampleInfo>({ instanceId: 0, sampleId: 0, startTime: 0, trackId: 0 });
+    const lastPosAppliedCpy = useRef(lastPosApplied);
 
     // Try to delay the start of the multitrack after first user interactions
     // to avoid the warning "An AudioContext was prevented from starting automatically. It must be created or resumed after a user gesture on the page."
@@ -44,7 +50,12 @@ function TrackList() {
                 .then((response) => response.json())
                 .then((data: Track[]) => {
                     console.log(data);
-                    setSamplesInTrack(data.map((t) => t.samples).flat());
+                    setSamplesInTrack(
+                        data
+                            .map((t) => t.samples)
+                            .flat()
+                            .sort((a, b) => a.id - b.id),
+                    );
                 })
                 .catch((error) => {
                     console.error('Error while fetching tracks: ', error);
@@ -84,35 +95,30 @@ function TrackList() {
                         console.log(`Sample ${id} start position updated to ${startPosition}`);
                         const idAsInt = typeof id == 'string' ? parseInt(id) : id;
                         const sit = samplesInTrack.find((t) => t.id == idAsInt)!;
+                        const startTime = Number(Number(startPosition).toFixed(6)); // significative digits
 
-                        editClient
-                            .changeSamplePosition({
-                                instanceId: idAsInt,
-                                startTime: startPosition,
-                                trackId: sit.trackId,
-                                sampleId: sit.sample.id,
-                            })
-                            .then((a) => {
-                                console.log('req done', a);
-                            });
+                        // TODO: fix this logic of smart ignoring
+                        // This seems to work well except when a user move a sample after another user did it...
+                        if (lastPosAppliedCpy.current.instanceId === id && mspCopy.current.instanceId != id) return;
+
+                        const pos = {
+                            instanceId: idAsInt,
+                            startTime: startTime,
+                            trackId: sit.trackId,
+                            sampleId: sit.sample.id,
+                        };
+                        setMovedSamplePos(pos);
+                        mspCopy.current = pos;
                     });
 
-                    editClient.getSamplePositions({}).responses.onMessage((m) => {
+                    editClient.getSamplePositions({}, { timeout: 10000000, abort: signal }).responses.onMessage((m) => {
+                        if (lastSentMovedSamplePos.current.instanceId == m.instanceId) return; // try to ignore messages coming back after action
+
                         console.log('Got new position on sample.instanceId ' + m.instanceId + ' with startTime ' + m.startTime);
                         const idx = samplesInTrack.findIndex((s) => s.id == m.instanceId);
+                        setLastPosApplied(m);
+                        lastPosAppliedCpy.current = m;
                         multitrack?.setTrackStartPosition(idx, m.startTime);
-                    });
-
-                    multitrack.on('start-cue-change', ({ id, startCue }) => {
-                        console.log(`Sample ${id} start cue updated to ${startCue}`);
-                    });
-
-                    multitrack.on('end-cue-change', ({ id, endCue }) => {
-                        console.log(`Sample ${id} end cue updated to ${endCue}`);
-                    });
-
-                    multitrack.on('intro-end-change', ({ id, endTime }) => {
-                        console.log(`Sample ${id} intro end updated to ${endTime}`);
                     });
 
                     multitrack.on('drop', ({ id }) => {
@@ -169,12 +175,6 @@ function TrackList() {
                         }
                     });
 
-                    // Zoom
-                    // const slider = document.querySelector('input[type="range"]');
-                    // slider.oninput = () => {
-                    //     multitrack.zoom(slider.valueAsNumber);
-                    // };
-
                     // Destroy all wavesurfer instances on unmount
                     // This should be called before calling initMultiTrack again to properly clean up
                     window.onbeforeunload = () => {
@@ -189,8 +189,23 @@ function TrackList() {
                 });
         }
 
+        // Each MIN_MOUSE_MSG, if the position has changed, send the new one
+        const intervalId = setInterval(() => {
+            // console.log('checking last moved sample', lastSentMovedSamplePos, mspCopy);
+            if (
+                lastSentMovedSamplePos.current.startTime === mspCopy.current.startTime &&
+                lastSentMovedSamplePos.current.instanceId === mspCopy.current.instanceId
+            )
+                return;
+
+            lastSentMovedSamplePos.current = mspCopy.current;
+            console.log('sending new startTime: ', mspCopy.current.startTime);
+            editClient.changeSamplePosition(mspCopy.current, { timeout: 1000, abort: signal });
+        }, MIN_SAMPLE_POSITION_MSG_INTERVAL);
+
         return () => {
-            console.log('out of useeffect');
+            controller.abort();
+            clearInterval(intervalId);
             multitrack?.destroy();
         };
     }, [firstUserInteraction]);
