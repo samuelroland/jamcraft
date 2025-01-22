@@ -21,6 +21,15 @@ export interface MousePosition {
      */
     y: number;
 }
+/**
+ * @generated from protobuf message mouse.MouseSubscription
+ */
+export interface MouseSubscription {
+    /**
+     * @generated from protobuf field: uint32 userId = 1;
+     */
+    userId: number;
+}
 // @generated message type with reflection information, may provide speed optimized methods
 class MousePosition$Type extends MessageType<MousePosition> {
     constructor() {
@@ -35,10 +44,22 @@ class MousePosition$Type extends MessageType<MousePosition> {
  * @generated MessageType for protobuf message mouse.MousePosition
  */
 export const MousePosition = new MousePosition$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class MouseSubscription$Type extends MessageType<MouseSubscription> {
+    constructor() {
+        super("mouse.MouseSubscription", [
+            { no: 1, name: "userId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ }
+        ]);
+    }
+}
+/**
+ * @generated MessageType for protobuf message mouse.MouseSubscription
+ */
+export const MouseSubscription = new MouseSubscription$Type();
 /**
  * @generated ServiceType for protobuf service mouse.MouseService
  */
 export const MouseService = new ServiceType("mouse.MouseService", [
-    { name: "GetMouseUpdates", serverStreaming: true, options: {}, I: Empty, O: MousePosition },
+    { name: "GetMouseUpdates", serverStreaming: true, options: {}, I: MouseSubscription, O: MousePosition },
     { name: "SendMousePosition", options: {}, I: MousePosition, O: Empty }
 ]);

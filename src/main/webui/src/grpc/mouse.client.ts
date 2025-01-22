@@ -4,10 +4,11 @@
 import type { RpcTransport } from "@protobuf-ts/runtime-rpc";
 import type { ServiceInfo } from "@protobuf-ts/runtime-rpc";
 import { MouseService } from "./mouse";
+import type { Empty } from "./google/protobuf/empty";
 import type { UnaryCall } from "@protobuf-ts/runtime-rpc";
 import { stackIntercept } from "@protobuf-ts/runtime-rpc";
 import type { MousePosition } from "./mouse";
-import type { Empty } from "./google/protobuf/empty";
+import type { MouseSubscription } from "./mouse";
 import type { ServerStreamingCall } from "@protobuf-ts/runtime-rpc";
 import type { RpcOptions } from "@protobuf-ts/runtime-rpc";
 /**
@@ -17,9 +18,9 @@ export interface IMouseServiceClient {
     /**
      * Server-side streaming to broadcast mouse positions to all clients
      *
-     * @generated from protobuf rpc: GetMouseUpdates(google.protobuf.Empty) returns (stream mouse.MousePosition);
+     * @generated from protobuf rpc: GetMouseUpdates(mouse.MouseSubscription) returns (stream mouse.MousePosition);
      */
-    getMouseUpdates(input: Empty, options?: RpcOptions): ServerStreamingCall<Empty, MousePosition>;
+    getMouseUpdates(input: MouseSubscription, options?: RpcOptions): ServerStreamingCall<MouseSubscription, MousePosition>;
     /**
      * Unary sending to let clients send their mouse positions when they move
      *
@@ -39,11 +40,11 @@ export class MouseServiceClient implements IMouseServiceClient, ServiceInfo {
     /**
      * Server-side streaming to broadcast mouse positions to all clients
      *
-     * @generated from protobuf rpc: GetMouseUpdates(google.protobuf.Empty) returns (stream mouse.MousePosition);
+     * @generated from protobuf rpc: GetMouseUpdates(mouse.MouseSubscription) returns (stream mouse.MousePosition);
      */
-    getMouseUpdates(input: Empty, options?: RpcOptions): ServerStreamingCall<Empty, MousePosition> {
+    getMouseUpdates(input: MouseSubscription, options?: RpcOptions): ServerStreamingCall<MouseSubscription, MousePosition> {
         const method = this.methods[0], opt = this._transport.mergeOptions(options);
-        return stackIntercept<Empty, MousePosition>("serverStreaming", this._transport, method, opt, input);
+        return stackIntercept<MouseSubscription, MousePosition>("serverStreaming", this._transport, method, opt, input);
     }
     /**
      * Unary sending to let clients send their mouse positions when they move
