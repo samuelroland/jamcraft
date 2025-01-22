@@ -5,6 +5,15 @@ import { Empty } from "./google/protobuf/empty";
 import { ServiceType } from "@protobuf-ts/runtime-rpc";
 import { MessageType } from "@protobuf-ts/runtime";
 /**
+ * @generated from protobuf message edit.UserId
+ */
+export interface UserId {
+    /**
+     * @generated from protobuf field: uint32 id = 1;
+     */
+    id: number;
+}
+/**
  * @generated from protobuf message edit.SampleInstanceId
  */
 export interface SampleInstanceId {
@@ -12,25 +21,41 @@ export interface SampleInstanceId {
      * @generated from protobuf field: uint32 instanceId = 1;
      */
     instanceId: number; // sample_tracks.id !
+    /**
+     * @generated from protobuf field: uint32 userId = 2;
+     */
+    userId: number;
 }
 /**
  * @generated from protobuf message edit.SampleInfo
  */
 export interface SampleInfo {
     /**
-     * @generated from protobuf field: uint32 instanceId = 1;
+     * @generated from protobuf field: edit.EditAction action = 1;
+     */
+    action: EditAction;
+    /**
+     * @generated from protobuf field: uint32 userId = 2;
+     */
+    userId: number;
+    /**
+     * @generated from protobuf field: uint32 instanceId = 3;
      */
     instanceId: number; // sample_tracks.id !
     /**
-     * @generated from protobuf field: uint32 sampleId = 2;
+     * @generated from protobuf field: uint32 sampleId = 4;
      */
     sampleId: number;
     /**
-     * @generated from protobuf field: uint32 trackId = 3;
+     * @generated from protobuf field: uint32 trackId = 5;
      */
     trackId: number;
     /**
-     * @generated from protobuf field: double startTime = 4;
+     * @generated from protobuf field: string trackName = 6;
+     */
+    trackName: string;
+    /**
+     * @generated from protobuf field: double startTime = 7;
      */
     startTime: number;
 }
@@ -46,12 +71,59 @@ export interface TrackInfo {
      * @generated from protobuf field: string name = 2;
      */
     name: string;
+    /**
+     * @generated from protobuf field: uint32 userId = 3;
+     */
+    userId: number;
 }
+/**
+ * @generated from protobuf message edit.TrackName
+ */
+export interface TrackName {
+    /**
+     * @generated from protobuf field: string name = 1;
+     */
+    name: string;
+    /**
+     * @generated from protobuf field: uint32 userId = 2;
+     */
+    userId: number;
+}
+/**
+ * @generated from protobuf enum edit.EditAction
+ */
+export enum EditAction {
+    /**
+     * @generated from protobuf enum value: UNSPECIFIED = 0;
+     */
+    UNSPECIFIED = 0,
+    /**
+     * @generated from protobuf enum value: CREATE_TRACK = 1;
+     */
+    CREATE_TRACK = 1,
+    /**
+     * @generated from protobuf enum value: UPDATE_TRACK = 2;
+     */
+    UPDATE_TRACK = 2
+}
+// @generated message type with reflection information, may provide speed optimized methods
+class UserId$Type extends MessageType<UserId> {
+    constructor() {
+        super("edit.UserId", [
+            { no: 1, name: "id", kind: "scalar", T: 13 /*ScalarType.UINT32*/ }
+        ]);
+    }
+}
+/**
+ * @generated MessageType for protobuf message edit.UserId
+ */
+export const UserId = new UserId$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class SampleInstanceId$Type extends MessageType<SampleInstanceId> {
     constructor() {
         super("edit.SampleInstanceId", [
-            { no: 1, name: "instanceId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ }
+            { no: 1, name: "instanceId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 2, name: "userId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ }
         ]);
     }
 }
@@ -63,10 +135,13 @@ export const SampleInstanceId = new SampleInstanceId$Type();
 class SampleInfo$Type extends MessageType<SampleInfo> {
     constructor() {
         super("edit.SampleInfo", [
-            { no: 1, name: "instanceId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
-            { no: 2, name: "sampleId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
-            { no: 3, name: "trackId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
-            { no: 4, name: "startTime", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ }
+            { no: 1, name: "action", kind: "enum", T: () => ["edit.EditAction", EditAction] },
+            { no: 2, name: "userId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 3, name: "instanceId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 4, name: "sampleId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 5, name: "trackId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 6, name: "trackName", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 7, name: "startTime", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ }
         ]);
     }
 }
@@ -79,7 +154,8 @@ class TrackInfo$Type extends MessageType<TrackInfo> {
     constructor() {
         super("edit.TrackInfo", [
             { no: 1, name: "trackId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
-            { no: 2, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 2, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "userId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ }
         ]);
     }
 }
@@ -87,14 +163,26 @@ class TrackInfo$Type extends MessageType<TrackInfo> {
  * @generated MessageType for protobuf message edit.TrackInfo
  */
 export const TrackInfo = new TrackInfo$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class TrackName$Type extends MessageType<TrackName> {
+    constructor() {
+        super("edit.TrackName", [
+            { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "userId", kind: "scalar", T: 13 /*ScalarType.UINT32*/ }
+        ]);
+    }
+}
+/**
+ * @generated MessageType for protobuf message edit.TrackName
+ */
+export const TrackName = new TrackName$Type();
 /**
  * @generated ServiceType for protobuf service edit.EditService
  */
 export const EditService = new ServiceType("edit.EditService", [
-    { name: "GetSamplePositions", serverStreaming: true, options: {}, I: Empty, O: SampleInfo },
     { name: "ChangeSamplePosition", options: {}, I: SampleInfo, O: Empty },
     { name: "RemoveSample", options: {}, I: SampleInstanceId, O: Empty },
-    { name: "GetUpdatedTracks", serverStreaming: true, options: {}, I: Empty, O: TrackInfo },
-    { name: "ChangeTrackInfo", options: {}, I: TrackInfo, O: Empty },
-    { name: "GetSampleUploads", serverStreaming: true, options: {}, I: Empty, O: SampleInfo }
+    { name: "UpdateTrackName", options: {}, I: TrackInfo, O: Empty },
+    { name: "AddTrack", options: {}, I: TrackName, O: Empty },
+    { name: "GetEditEvents", serverStreaming: true, options: {}, I: UserId, O: SampleInfo }
 ]);
