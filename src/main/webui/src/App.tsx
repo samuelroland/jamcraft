@@ -43,10 +43,10 @@ function App() {
         latestMousePosition.current = newPosition; // this copy is important
     };
 
-    const handleLogout = (event) => {
-        const url = "/leave";
-        const data = JSON.stringify({id:selfIdRef.current})
-        navigator.sendBeacon(url,data);
+    const handleLogout = () => {
+        const url = '/leave';
+        const data = JSON.stringify({ id: selfIdRef.current });
+        navigator.sendBeacon(url, data);
     };
 
     const handleLogin = (username: string) => {
@@ -111,8 +111,12 @@ function App() {
     };
 
     useEffect(() => {
-        mouseClient.getMouseUpdates({}, { timeout: 10000000, abort: signal }).responses.onMessage((p) => handleUpdatedMousesPositions(p));
-        userClient.getUsersEvents({}, { timeout: 10000000, abort: signal }).responses.onMessage((uc) => handleUserEvent(uc));
+        mouseClient
+            .getMouseUpdates({ userId: selfIdRef.current }, { timeout: 10000000, abort: signal })
+            .responses.onMessage((p) => handleUpdatedMousesPositions(p));
+        userClient
+            .getUsersEvents({ userId: selfIdRef.current }, { timeout: 10000000, abort: signal })
+            .responses.onMessage((uc) => handleUserEvent(uc));
         addEventListener('mousemove', onMouseMove);
         addEventListener('beforeunload', handleLogout);
         // Try to load user persisted in local storage
@@ -158,7 +162,7 @@ function App() {
 
                 {/* TrackList on the right */}
                 <div className="ml-1/4 p-2 w-full max-w-screen">
-                    <TrackList />
+                    <TrackList selfId={selfIdRef.current} />
                 </div>
             </div>
             {Array.from(otherMouses.values()).map((p) => (
