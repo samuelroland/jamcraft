@@ -27,7 +27,7 @@ function App() {
     const [users, setUsers] = useState<Map<number, string>>(new Map());
 
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const [selfId] = useState<number>(0);
+    const [selfId,setSelfId] = useState<number>(0);
     const selfIdRef = useRef(selfId);
     const [isLogged] = useState(false);
     const isLoggedRef = useRef(isLogged);
@@ -48,6 +48,17 @@ function App() {
         const data = JSON.stringify({ id: selfIdRef.current });
         navigator.sendBeacon(url, data);
     };
+    useEffect(()=>{
+        selfIdRef.current = selfId
+        if(selfIdRef.current != 0){
+            mouseClient
+                .getMouseUpdates({ userId: selfIdRef.current }, { timeout: 10000000, abort: signal })
+                .responses.onMessage((p) => handleUpdatedMousesPositions(p));
+            userClient
+                .getUsersEvents({ userId: selfIdRef.current }, { timeout: 10000000, abort: signal })
+                .responses.onMessage((uc) => handleUserEvent(uc));
+        }
+    },[selfId])
 
     const handleLogin = (username: string) => {
         const promise = userClient.join({ name: username }, { timeout: 2000, abort: signal });
@@ -55,7 +66,7 @@ function App() {
             .then((call) => {
                 for (const user of call.response.users) {
                     if (user.name == username) {
-                        selfIdRef.current = user.id;
+                        setSelfId(user.id);
                         localStorage.setItem('user', JSON.stringify(user));
                     }
                     setUsers((u) => {
@@ -75,9 +86,6 @@ function App() {
 
     const handleUpdatedMousesPositions = (p: MousePosition) => {
         // console.log('Got new position', p);
-        if (p.userId == selfIdRef.current) {
-            return;
-        }
         setOtherMouses((ms) => {
             // Create a new Map to maintain immutability
             const newMap = new Map(ms);
@@ -111,12 +119,7 @@ function App() {
     };
 
     useEffect(() => {
-        mouseClient
-            .getMouseUpdates({ userId: selfIdRef.current }, { timeout: 10000000, abort: signal })
-            .responses.onMessage((p) => handleUpdatedMousesPositions(p));
-        userClient
-            .getUsersEvents({ userId: selfIdRef.current }, { timeout: 10000000, abort: signal })
-            .responses.onMessage((uc) => handleUserEvent(uc));
+
         addEventListener('mousemove', onMouseMove);
         addEventListener('beforeunload', handleLogout);
         // Try to load user persisted in local storage
