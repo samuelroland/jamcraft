@@ -55,6 +55,11 @@ function App() {
                 .getUsersEvents({ userId: selfIdRef.current }, { timeout: 10000000, abort: signal })
                 .responses.onMessage((uc) => handleUserEvent(uc));
         }
+
+        // We must clean things here because HMR is running this on every refresh
+        return () => {
+            controller.abort();
+        };
     }, [selfId]);
     useEffect(() => {
         mousePositionRef.current = mousePosition;
