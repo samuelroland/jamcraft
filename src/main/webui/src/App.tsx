@@ -27,7 +27,7 @@ function App() {
     const [users, setUsers] = useState<Map<number, string>>(new Map());
 
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const [selfId,setSelfId] = useState<number>(0);
+    const [selfId, setSelfId] = useState<number>(0);
     const selfIdRef = useRef(selfId);
     const [isLogged] = useState(false);
     const isLoggedRef = useRef(isLogged);
@@ -45,9 +45,9 @@ function App() {
         const data = JSON.stringify({ id: selfIdRef.current });
         navigator.sendBeacon(url, data);
     };
-    useEffect(()=>{
-        selfIdRef.current = selfId
-        if(selfIdRef.current != 0){
+    useEffect(() => {
+        selfIdRef.current = selfId;
+        if (selfIdRef.current != 0) {
             mouseClient
                 .getMouseUpdates({ userId: selfIdRef.current }, { timeout: 10000000, abort: signal })
                 .responses.onMessage((p) => handleUpdatedMousesPositions(p));
@@ -55,10 +55,10 @@ function App() {
                 .getUsersEvents({ userId: selfIdRef.current }, { timeout: 10000000, abort: signal })
                 .responses.onMessage((uc) => handleUserEvent(uc));
         }
-    },[selfId])
-    useEffect(()=>{
-        mousePositionRef.current = mousePosition
-    },[mousePosition])
+    }, [selfId]);
+    useEffect(() => {
+        mousePositionRef.current = mousePosition;
+    }, [mousePosition]);
     const handleLogin = (username: string) => {
         const promise = userClient.join({ name: username }, { timeout: 2000, abort: signal });
         promise
@@ -118,7 +118,6 @@ function App() {
     };
 
     useEffect(() => {
-
         addEventListener('mousemove', onMouseMove);
         addEventListener('beforeunload', handleLogout);
         // Try to load user persisted in local storage
@@ -127,15 +126,18 @@ function App() {
             const u = JSON.parse(user) as User;
             handleLogin(u.name);
         }
-        let lastMousePos = {x:0,y:0};
+        let lastMousePos = { x: 0, y: 0 };
         // Each MIN_MOUSE_MSG, if the position has changed, send the new one
         const intervalId = setInterval(() => {
-            const currentMousePos = mousePositionRef.current
+            const currentMousePos = mousePositionRef.current;
             if (!isLoggedRef.current) return;
             if (currentMousePos.x !== lastMousePos.x || currentMousePos.y !== lastMousePos.y) {
-                mouseClient.sendMousePosition({ userId: selfIdRef.current, x: currentMousePos.x, y: currentMousePos.y }, { timeout: 100, abort: signal });
+                mouseClient.sendMousePosition(
+                    { userId: selfIdRef.current, x: currentMousePos.x, y: currentMousePos.y },
+                    { timeout: 100, abort: signal },
+                );
             }
-            lastMousePos = currentMousePos
+            lastMousePos = currentMousePos;
         }, MIN_MOUSE_MSG_INTERVAL);
 
         return () => {
