@@ -5,25 +5,32 @@ import Multitrack, { TrackOptions } from 'wavesurfer-multitrack';
 import { Button } from './ui/button.tsx';
 import { getGrpcTransport } from '../lib/utils.ts';
 import { MIN_SAMPLE_POSITION_MSG_INTERVAL } from '../constants.ts';
-import { SampleInfo } from '../grpc/edit.ts';
+import { EditAction, SampleInfo } from '../grpc/edit.ts';
 
-function TrackList() {
+function TrackList({ selfId }: { selfId: number }) {
     const [samplesInTrack, setSamplesInTrack] = useState<SampleInTrack[]>([]);
     const [firstUserInteraction, setFirstUserInteraction] = useState(false);
     const transport = getGrpcTransport();
     const editClient = useMemo(() => new EditServiceClient(transport), [transport]);
+
+    type SampleBasicInfo = Omit<SampleInfo, 'action' | 'trackName' | 'userId'>;
 
     // A way to abort requests on component destroy - useful for HMR
     const controller = new AbortController();
     const { signal } = controller;
 
     // Buffering grpc calls to changeSamplePosition
-    const [movedSamplePos, setMovedSamplePos] = useState<SampleInfo>({ instanceId: 0, sampleId: 0, startTime: 0, trackId: 0 }); // current moved sample pos
+    const [movedSamplePos, setMovedSamplePos] = useState<SampleBasicInfo>({
+        instanceId: 0,
+        sampleId: 0,
+        startTime: 0,
+        trackId: 0,
+    }); // current moved sample pos
     const mspCopy = useRef(movedSamplePos); // just a copy for reactivity...
     const lastSentMovedSamplePos = useRef(movedSamplePos); // the last one sent via Grpc, so we don't send too requests too often
 
     // Received from another client
-    const [lastPosApplied, setLastPosApplied] = useState<SampleInfo>({ instanceId: 0, sampleId: 0, startTime: 0, trackId: 0 });
+    const [lastPosApplied, setLastPosApplied] = useState<SampleBasicInfo>({ instanceId: 0, sampleId: 0, startTime: 0, trackId: 0 });
     const lastPosAppliedCpy = useRef(lastPosApplied);
 
     // Try to delay the start of the multitrack after first user interactions
@@ -111,7 +118,7 @@ function TrackList() {
                         mspCopy.current = pos;
                     });
 
-                    editClient.getSamplePositions({}, { timeout: 10000000, abort: signal }).responses.onMessage((m) => {
+                    editClient.getEditEvents({ id: selfId }, { timeout: 10000000, abort: signal }).responses.onMessage((m) => {
                         if (lastSentMovedSamplePos.current.instanceId == m.instanceId) return; // try to ignore messages coming back after action
 
                         console.log('Got new position on sample.instanceId ' + m.instanceId + ' with startTime ' + m.startTime);
@@ -200,7 +207,10 @@ function TrackList() {
 
             lastSentMovedSamplePos.current = mspCopy.current;
             console.log('sending new startTime: ', mspCopy.current.startTime);
-            editClient.changeSamplePosition(mspCopy.current, { timeout: 1000, abort: signal });
+            editClient.changeSamplePosition(
+                { ...mspCopy.current, action: EditAction.UPDATE_TRACK, trackName: '', userId: selfId },
+                { timeout: 1000, abort: signal },
+            );
         }, MIN_SAMPLE_POSITION_MSG_INTERVAL);
 
         return () => {

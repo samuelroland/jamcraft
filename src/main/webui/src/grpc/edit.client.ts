@@ -4,54 +4,50 @@
 import type { RpcTransport } from "@protobuf-ts/runtime-rpc";
 import type { ServiceInfo } from "@protobuf-ts/runtime-rpc";
 import { EditService } from "./edit";
+import type { UserId } from "./edit";
+import type { ServerStreamingCall } from "@protobuf-ts/runtime-rpc";
+import type { TrackName } from "./edit";
 import type { TrackInfo } from "./edit";
 import type { SampleInstanceId } from "./edit";
-import type { UnaryCall } from "@protobuf-ts/runtime-rpc";
 import { stackIntercept } from "@protobuf-ts/runtime-rpc";
-import type { SampleInfo } from "./edit";
 import type { Empty } from "./google/protobuf/empty";
-import type { ServerStreamingCall } from "@protobuf-ts/runtime-rpc";
+import type { SampleInfo } from "./edit";
+import type { UnaryCall } from "@protobuf-ts/runtime-rpc";
 import type { RpcOptions } from "@protobuf-ts/runtime-rpc";
 /**
  * @generated from protobuf service edit.EditService
  */
 export interface IEditServiceClient {
     /**
-     * Server-side streaming to broadcast positions of samples changed by others
-     *
-     * @generated from protobuf rpc: GetSamplePositions(google.protobuf.Empty) returns (stream edit.SampleInfo);
-     */
-    getSamplePositions(input: Empty, options?: RpcOptions): ServerStreamingCall<Empty, SampleInfo>;
-    /**
-     * Unary sending to let clients change position of samples
+     * Change the sample position on a track
      *
      * @generated from protobuf rpc: ChangeSamplePosition(edit.SampleInfo) returns (google.protobuf.Empty);
      */
     changeSamplePosition(input: SampleInfo, options?: RpcOptions): UnaryCall<SampleInfo, Empty>;
     /**
-     * Unary sending to let clients remove a sample from the project, giving the samples_tracks.id !
+     * Removes a sample from a track
      *
      * @generated from protobuf rpc: RemoveSample(edit.SampleInstanceId) returns (google.protobuf.Empty);
      */
     removeSample(input: SampleInstanceId, options?: RpcOptions): UnaryCall<SampleInstanceId, Empty>;
     /**
-     * Server-side streaming to broadcast updated tracks, it allows to update track names in live
+     * Update track name
      *
-     * @generated from protobuf rpc: GetUpdatedTracks(google.protobuf.Empty) returns (stream edit.TrackInfo);
+     * @generated from protobuf rpc: UpdateTrackName(edit.TrackInfo) returns (google.protobuf.Empty);
      */
-    getUpdatedTracks(input: Empty, options?: RpcOptions): ServerStreamingCall<Empty, TrackInfo>;
+    updateTrackName(input: TrackInfo, options?: RpcOptions): UnaryCall<TrackInfo, Empty>;
     /**
-     * Unary sending to update track info or create one
+     * Adds a track on the page. Gives it a default name if not specified
      *
-     * @generated from protobuf rpc: ChangeTrackInfo(edit.TrackInfo) returns (google.protobuf.Empty);
+     * @generated from protobuf rpc: AddTrack(edit.TrackName) returns (google.protobuf.Empty);
      */
-    changeTrackInfo(input: TrackInfo, options?: RpcOptions): UnaryCall<TrackInfo, Empty>;
+    addTrack(input: TrackName, options?: RpcOptions): UnaryCall<TrackName, Empty>;
     /**
-     * Server-side streaming to broadcast new sample uploads, useful to update the local library
+     * Server-side streaming to broadcast edit events
      *
-     * @generated from protobuf rpc: GetSampleUploads(google.protobuf.Empty) returns (stream edit.SampleInfo);
+     * @generated from protobuf rpc: GetEditEvents(edit.UserId) returns (stream edit.SampleInfo);
      */
-    getSampleUploads(input: Empty, options?: RpcOptions): ServerStreamingCall<Empty, SampleInfo>;
+    getEditEvents(input: UserId, options?: RpcOptions): ServerStreamingCall<UserId, SampleInfo>;
 }
 /**
  * @generated from protobuf service edit.EditService
@@ -63,57 +59,48 @@ export class EditServiceClient implements IEditServiceClient, ServiceInfo {
     constructor(private readonly _transport: RpcTransport) {
     }
     /**
-     * Server-side streaming to broadcast positions of samples changed by others
-     *
-     * @generated from protobuf rpc: GetSamplePositions(google.protobuf.Empty) returns (stream edit.SampleInfo);
-     */
-    getSamplePositions(input: Empty, options?: RpcOptions): ServerStreamingCall<Empty, SampleInfo> {
-        const method = this.methods[0], opt = this._transport.mergeOptions(options);
-        return stackIntercept<Empty, SampleInfo>("serverStreaming", this._transport, method, opt, input);
-    }
-    /**
-     * Unary sending to let clients change position of samples
+     * Change the sample position on a track
      *
      * @generated from protobuf rpc: ChangeSamplePosition(edit.SampleInfo) returns (google.protobuf.Empty);
      */
     changeSamplePosition(input: SampleInfo, options?: RpcOptions): UnaryCall<SampleInfo, Empty> {
-        const method = this.methods[1], opt = this._transport.mergeOptions(options);
+        const method = this.methods[0], opt = this._transport.mergeOptions(options);
         return stackIntercept<SampleInfo, Empty>("unary", this._transport, method, opt, input);
     }
     /**
-     * Unary sending to let clients remove a sample from the project, giving the samples_tracks.id !
+     * Removes a sample from a track
      *
      * @generated from protobuf rpc: RemoveSample(edit.SampleInstanceId) returns (google.protobuf.Empty);
      */
     removeSample(input: SampleInstanceId, options?: RpcOptions): UnaryCall<SampleInstanceId, Empty> {
-        const method = this.methods[2], opt = this._transport.mergeOptions(options);
+        const method = this.methods[1], opt = this._transport.mergeOptions(options);
         return stackIntercept<SampleInstanceId, Empty>("unary", this._transport, method, opt, input);
     }
     /**
-     * Server-side streaming to broadcast updated tracks, it allows to update track names in live
+     * Update track name
      *
-     * @generated from protobuf rpc: GetUpdatedTracks(google.protobuf.Empty) returns (stream edit.TrackInfo);
+     * @generated from protobuf rpc: UpdateTrackName(edit.TrackInfo) returns (google.protobuf.Empty);
      */
-    getUpdatedTracks(input: Empty, options?: RpcOptions): ServerStreamingCall<Empty, TrackInfo> {
-        const method = this.methods[3], opt = this._transport.mergeOptions(options);
-        return stackIntercept<Empty, TrackInfo>("serverStreaming", this._transport, method, opt, input);
-    }
-    /**
-     * Unary sending to update track info or create one
-     *
-     * @generated from protobuf rpc: ChangeTrackInfo(edit.TrackInfo) returns (google.protobuf.Empty);
-     */
-    changeTrackInfo(input: TrackInfo, options?: RpcOptions): UnaryCall<TrackInfo, Empty> {
-        const method = this.methods[4], opt = this._transport.mergeOptions(options);
+    updateTrackName(input: TrackInfo, options?: RpcOptions): UnaryCall<TrackInfo, Empty> {
+        const method = this.methods[2], opt = this._transport.mergeOptions(options);
         return stackIntercept<TrackInfo, Empty>("unary", this._transport, method, opt, input);
     }
     /**
-     * Server-side streaming to broadcast new sample uploads, useful to update the local library
+     * Adds a track on the page. Gives it a default name if not specified
      *
-     * @generated from protobuf rpc: GetSampleUploads(google.protobuf.Empty) returns (stream edit.SampleInfo);
+     * @generated from protobuf rpc: AddTrack(edit.TrackName) returns (google.protobuf.Empty);
      */
-    getSampleUploads(input: Empty, options?: RpcOptions): ServerStreamingCall<Empty, SampleInfo> {
-        const method = this.methods[5], opt = this._transport.mergeOptions(options);
-        return stackIntercept<Empty, SampleInfo>("serverStreaming", this._transport, method, opt, input);
+    addTrack(input: TrackName, options?: RpcOptions): UnaryCall<TrackName, Empty> {
+        const method = this.methods[3], opt = this._transport.mergeOptions(options);
+        return stackIntercept<TrackName, Empty>("unary", this._transport, method, opt, input);
+    }
+    /**
+     * Server-side streaming to broadcast edit events
+     *
+     * @generated from protobuf rpc: GetEditEvents(edit.UserId) returns (stream edit.SampleInfo);
+     */
+    getEditEvents(input: UserId, options?: RpcOptions): ServerStreamingCall<UserId, SampleInfo> {
+        const method = this.methods[4], opt = this._transport.mergeOptions(options);
+        return stackIntercept<UserId, SampleInfo>("serverStreaming", this._transport, method, opt, input);
     }
 }
