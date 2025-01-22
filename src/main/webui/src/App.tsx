@@ -33,14 +33,11 @@ function App() {
     const isLoggedRef = useRef(isLogged);
     // With the help of Copilot, I found that this copy is absolutely necessary
     // If we remove it, setInterval code will not be called when we continuously move the mouse
-    const latestMousePosition = useRef(mousePosition);
-    const previousMousePosition = useRef(mousePosition);
+    const mousePositionRef = useRef(mousePosition);
 
     // Just save the new position each time it moves
     const onMouseMove = (event: MouseEvent) => {
-        const newPosition = { x: event.clientX, y: event.clientY };
-        setMousePosition(newPosition);
-        latestMousePosition.current = newPosition; // this copy is important
+        setMousePosition({ x: event.clientX, y: event.clientY });
     };
 
     const handleLogout = () => {
@@ -59,7 +56,9 @@ function App() {
                 .responses.onMessage((uc) => handleUserEvent(uc));
         }
     },[selfId])
-
+    useEffect(()=>{
+        mousePositionRef.current = mousePosition
+    },[mousePosition])
     const handleLogin = (username: string) => {
         const promise = userClient.join({ name: username }, { timeout: 2000, abort: signal });
         promise
@@ -128,17 +127,15 @@ function App() {
             const u = JSON.parse(user) as User;
             handleLogin(u.name);
         }
-
+        let lastMousePos = {x:0,y:0};
         // Each MIN_MOUSE_MSG, if the position has changed, send the new one
         const intervalId = setInterval(() => {
+            const currentMousePos = mousePositionRef.current
             if (!isLoggedRef.current) return;
-            const { x: currentX, y: currentY } = latestMousePosition.current;
-            const { x: previousX, y: previousY } = previousMousePosition.current;
-
-            if (currentX !== previousX || currentY !== previousY) {
-                previousMousePosition.current = { x: currentX, y: currentY };
-                mouseClient.sendMousePosition({ userId: selfIdRef.current, x: currentX, y: currentY }, { timeout: 100, abort: signal });
+            if (currentMousePos.x !== lastMousePos.x || currentMousePos.y !== lastMousePos.y) {
+                mouseClient.sendMousePosition({ userId: selfIdRef.current, x: currentMousePos.x, y: currentMousePos.y }, { timeout: 100, abort: signal });
             }
+            lastMousePos = currentMousePos
         }, MIN_MOUSE_MSG_INTERVAL);
 
         return () => {
