@@ -52,23 +52,26 @@ function Library() {
         else setCurrentIndex(index); // Update current sample index
     };
 
-    if (samples.length === 0) return <div>Loading samples...</div>;
-
     return (
         <div className="bg-white-100 rounded-md shadow-md ">
             <h1 className="text-2xl font-bold mb-2">Library</h1>
             <UploadDropZone onSuccessfulUpload={(sample: Sample) => setSamples([...samples, sample])}></UploadDropZone>
-            <div className="z-10 py-2 grid grid-cols-1 gap-2 ">
-                {samples.map((sample, index) => (
-                    <SampleItem
-                        key={sample.id}
-                        sample={sample}
-                        color={colors[index % colors.length]}
-                        togglePlayCallback={() => togglePlay(index)}
-                        containerRef={currentIndex === index ? containerRef : null}
-                    />
-                ))}
-            </div>
+
+            {samples.length === 0 ? (
+                <div>No sample...</div>
+            ) : (
+                <div className="z-10 py-2 grid grid-cols-1 gap-2 ">
+                    {samples.map((sample, index) => (
+                        <SampleItem
+                            key={sample.id}
+                            sample={sample}
+                            color={colors[index % colors.length]}
+                            togglePlayCallback={() => togglePlay(index)}
+                            containerRef={currentIndex === index ? containerRef : null}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

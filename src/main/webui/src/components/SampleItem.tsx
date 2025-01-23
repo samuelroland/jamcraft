@@ -11,7 +11,7 @@ interface Props {
 function SampleItem({ sample, color, togglePlayCallback, containerRef }: Props) {
     const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
         const sampleData = JSON.stringify(sample);
-        e.dataTransfer.setData('text/plain', sampleData);
+        e.dataTransfer.setData('sample', sampleData);
     };
 
     const formatDuration = (duration: number) => {
