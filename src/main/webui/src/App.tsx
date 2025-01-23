@@ -25,6 +25,8 @@ function App() {
     // A way to abort requests on component destroy - useful for HMR
     const controller = new AbortController();
     const { signal } = controller;
+    const controller2 = new AbortController();
+    const { signal2 } = controller2;
 
     const [otherMouses, setOtherMouses] = useState<Map<number, MousePosition>>(new Map());
     const [users, setUsers] = useState<Map<number, string>>(new Map());
@@ -51,13 +53,15 @@ function App() {
     useEffect(() => {
         selfIdRef.current = selfId;
         if (selfIdRef.current != 0) {
-            mouseClient.getMouseUpdates({ userId: selfIdRef.current }, { abort: signal }).responses.onMessage((p) => handleUpdatedMousesPositions(p));
-            userClient.getUsersEvents({ userId: selfIdRef.current }, { abort: signal }).responses.onMessage((uc) => handleUserEvent(uc));
+            mouseClient
+                .getMouseUpdates({ userId: selfIdRef.current }, { abort: signal2 })
+                .responses.onMessage((p) => handleUpdatedMousesPositions(p));
+            userClient.getUsersEvents({ userId: selfIdRef.current }, { abort: signal2 }).responses.onMessage((uc) => handleUserEvent(uc));
         }
 
         // We must clean things here because HMR is running this on every refresh
         return () => {
-            controller.abort();
+            controller2.abort();
         };
     }, [selfId]);
     useEffect(() => {
