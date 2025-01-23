@@ -9,7 +9,6 @@ import { EditAction, SampleInfo } from '../grpc/edit.ts';
 
 function TrackList({ selfId }: { selfId: number }) {
     const [samplesInTrack, setSamplesInTrack] = useState<SampleInTrack[]>([]);
-    const [projectIsLoaded, setProjectIsLoaded] = useState(false);
     const transport = getGrpcTransport();
     const editClient = useMemo(() => new EditServiceClient(transport), [transport]);
 
@@ -38,7 +37,10 @@ function TrackList({ selfId }: { selfId: number }) {
     // Try to delay the start of the multitrack after first user interactions
     // to avoid the warning "An AudioContext was prevented from starting automatically. It must be created or resumed after a user gesture on the page."
     function handleLoadProject() {
-        if (projectIsLoaded) return;
+        multitrack?.destroy();
+        const container = document.getElementById('container');
+        if (container) container.innerHTML = '';
+
         fetch('/tracks')
             .then((response) => response.json())
             .then((data: Track[]) => {
@@ -66,9 +68,6 @@ function TrackList({ selfId }: { selfId: number }) {
                             progressColor: 'hsl(145, 97%, 56%)',
                         },
                         intro: {
-                            endTime: 16,
-                            label: s.sample.name,
-                            color: 'hsl(46, 87%, 20%)',
                         },
                     } as TrackOptions;
                 });
@@ -104,7 +103,7 @@ function TrackList({ selfId }: { selfId: number }) {
                     mspCopy.current = pos;
                 });
 
-                editClient.getEditEvents({ id: selfId }, { timeout: 10000000, abort: signal }).responses.onMessage((m) => {
+                editClient.getEditEvents({ id: selfId }, { abort: signal }).responses.onMessage((m) => {
                     if (lastSentMovedSamplePos.current.instanceId == m.instanceId) return; // try to ignore messages coming back after action
 
                     console.log('Got new position on sample.instanceId ' + m.instanceId + ' with startTime ' + m.startTime);
