@@ -2,6 +2,87 @@
 
 The application is a web application allowing many users at the same time to collaborate on a music mix creation. If we think about something well known, we could say that the application is a simplified collaborative version of GarageBand. 
 
+## Introduction
+
+TODO: add screenshot with a nice audio timeline
+
+## Development setup
+### Requirements
+- Docker
+- Java
+- FFmpeg (on MacOS `brew install ffmpeg`, otherwise see [download page](https://www.ffmpeg.org/download.html))
+
+### Setup
+**Clone or get the project**
+```sh
+git clone git@github.com:amt-classroom/amtb-lab3-amtb-ouadahi-roland-strcksn-vanhove.git
+cd amtb-lab3-amtb-ouadahi-roland-strcksn-vanhove
+```
+
+**Run the Envoy proxy**
+
+On MacOS and Linux, this command
+```sh
+docker run -p 8081:8080 -p 9091:9091 -v ./envoy.yaml:/etc/envoy/envoy.yaml envoyproxy/envoy:v1.17.0
+```
+On Windows, Powershell requires `\`
+```sh
+docker run -p 8081:8080 -p 9091:9091 -v .\envoy.yaml:/etc/envoy/envoy.yaml envoyproxy/envoy:v1.17.0
+```
+
+**Start the quarkus dev server**
+
+Using the Quarkus CLI
+```sh
+quarkus dev
+```
+
+TODO document quarkus.http.host=0.0.0.0
+TODO document proxy IP to change
+TODO: make sure to empty the import.sql or comment it
+
+Using the Gradle wrapper otherwise
+```sh
+./gradlew quarkusDev
+```
+
+**Open your browser on `localhost:8080`**
+
+You should see the UI loaded with an empty library and no track, that's normal.
+
+TODO: add screenshot with empty UI
+
+You can take a few audios file in MP3 formats (note for teachers and assistants: take the zip we gave you). You can find way more public domain sounds on `freesound.org` in case you want to try it more.
+
+See usage on how to learn how to use it.
+
+<!--Test the entire setup-->
+
+## Usage
+1. Login: choose a username for the session, this will be persisted locally to support page refresh
+<!-- 1. Leave : TODO does it work ?? -->
+1. Upload new samples
+    1. Try to drag and drop a MP3 file
+    1. You can also automate the upload with this Fish function (if you use Fish)
+    ```fish
+    function jamcraft_upload
+        for i in $argv
+            echo "Uploading $i"
+            curl -s -X POST -F name=(string sub -e 25 (string split __ $i)[2]) -F file=@$i localhost:8080/samples | jq
+            echo ""
+        end
+    end
+    ```
+    1. You can find uploaded files in the `audio` folder at repository's root
+1. Try to play and see the waveforms of audio in the library on the left
+<!--TODO: screenshot :)-->
+1. Add new tracks by drag and dropping samples from the library to the dedicated zone at bottom right.
+<!--TODO: screenshot :)-->
+1. Load the project timeline by pressing twice on `Load project`
+<!--TODO: screenshot :)-->
+TODO: continue !!
+
+
 
 **Generated README to sort**
 
