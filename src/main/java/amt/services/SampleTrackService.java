@@ -23,6 +23,13 @@ public class SampleTrackService implements DtoConverter<SampleTrack, SampleInTra
     @Inject
     SampleService sampleService;
 
+    @Inject
+    // TODO: okay to access repos and not the service here ??
+    TrackRepository trackRepository;
+    @Inject
+    // TODO: okay to access repos and not the service here ??
+    SampleRepository sampleRepository;
+
     @Override
     public SampleTrack fromDTO(SampleInTrackDTO dto) {
         return null;
@@ -50,6 +57,18 @@ public class SampleTrackService implements DtoConverter<SampleTrack, SampleInTra
                         + " has been removed from track " + removed.getTrack().getName());
 
         return toDTO(removed);
+    }
+
+    @Transactional
+    public SampleInTrackDTO createSampleTrack(Integer sampleId, Integer trackId, Double newStartTime) {
+        SampleTrack sampleTrack = new SampleTrack();
+        sampleTrack.setTrack(trackRepository.findById(trackId)
+                .orElseThrow(() -> new IllegalArgumentException("Not found track with trackId")));
+        sampleTrack.setStartTime(newStartTime);
+        sampleTrack.setSample(sampleRepository.findById(sampleId)
+                .orElseThrow(() -> new IllegalArgumentException("Not found sample with given sampleId")));
+        sampleTrackRepository.save(sampleTrack);
+        return toDTO(sampleTrack);
     }
 
     @Transactional

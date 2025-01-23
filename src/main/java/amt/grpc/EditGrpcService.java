@@ -27,11 +27,22 @@ public class EditGrpcService implements EditService {
 
     @Override
     @RunOnVirtualThread
-    // Test command: grpcurl -plaintext -d '{\"sampleId\": 3, \"instanceId\": 8, \"startTime\": 42.42, \"trackId\": 4, \"userId\": 2}' localhost:9000 edit.EditService/ChangeSamplePosition
+    // Test command: grpcurl -plaintext -d '{\"sampleId\": 3, \"instanceId\": 8,
+    // \"startTime\": 42.42, \"trackId\": 4, \"userId\": 2}' localhost:9000
+    // edit.EditService/ChangeSamplePosition
     public Uni<Empty> changeSamplePosition(SampleInfo request) {
         try {
-            // Update the sample position in the database
-            sampleTrackService.updateSampleTrackPosition(request.getInstanceId(), request.getStartTime());
+            // TODO: maybe refactor this...
+            // Create the sample_tracks if it doesn't exist
+            if (request.getInstanceId() == 0) {
+                var result = sampleTrackService.createSampleTrack(request.getSampleId(), request.getTrackId(),
+                        request.getStartTime());
+                System.out.println("Created new sample_tracks for " + result.id());
+            } else {
+                // Update the sample position in the database
+                sampleTrackService.updateSampleTrackPosition(request.getInstanceId(), request.getStartTime());
+                System.out.println("Updated sample position");
+            }
 
             // // Create the response and broadcast
             processor.onNext(
@@ -55,7 +66,8 @@ public class EditGrpcService implements EditService {
 
     @Override
     @RunOnVirtualThread
-    // Test command : grpcurl -plaintext -d '{\"instanceId\": 1, \"userId\": 2 }' localhost:9000 edit.EditService/RemoveSample
+    // Test command : grpcurl -plaintext -d '{\"instanceId\": 1, \"userId\": 2 }'
+    // localhost:9000 edit.EditService/RemoveSample
     public Uni<Empty> removeSample(SampleInstanceId request) {
         try {
             // Remove the SampleTrack from the database
@@ -80,7 +92,8 @@ public class EditGrpcService implements EditService {
         }
     }
 
-    // Test command: grpcurl -plaintext -d '{\"trackId\": 3, \"name\": \"Drums\", \"userId\": 8 }' localhost:9000 edit.EditService/UpdateTrackName
+    // Test command: grpcurl -plaintext -d '{\"trackId\": 3, \"name\": \"Drums\",
+    // \"userId\": 8 }' localhost:9000 edit.EditService/UpdateTrackName
     @Override
     @RunOnVirtualThread
     public Uni<Empty> updateTrackName(TrackInfo request) {
@@ -98,12 +111,14 @@ public class EditGrpcService implements EditService {
 
             return Uni.createFrom().item(Empty.getDefaultInstance());
         } catch (IllegalArgumentException e) {
-            System.err.println("Error renaming track id " + request.getTrackId() + " to " + request.getName() + " : " + e.getMessage());
+            System.err.println("Error renaming track id " + request.getTrackId() + " to " + request.getName() + " : "
+                    + e.getMessage());
             return Uni.createFrom().failure(e);
         }
     }
 
-    // Test command: grpcurl -plaintext -d '{\"name\": \"Test track\", \"userId\": 8 }' localhost:9000 edit.EditService/AddTrack
+    // Test command: grpcurl -plaintext -d '{\"name\": \"Test track\", \"userId\": 8
+    // }' localhost:9000 edit.EditService/AddTrack
     @Override
     @RunOnVirtualThread
     public Uni<Empty> addTrack(TrackName request) {
@@ -126,7 +141,8 @@ public class EditGrpcService implements EditService {
         }
     }
 
-    // Test command: grpcurl -plaintext -d '{\"id\": 1}' localhost:9000 edit.EditService/GetEditEvents
+    // Test command: grpcurl -plaintext -d '{\"id\": 1}' localhost:9000
+    // edit.EditService/GetEditEvents
     @Override
     @RunOnVirtualThread
     public Multi<SampleInfo> getEditEvents(UserId request) {
