@@ -9,15 +9,18 @@ import { MIN_MOUSE_MSG_INTERVAL } from './constants';
 import Library from './components/Library';
 import { LoginDialog } from './components/LoginDialog.tsx';
 import MouseCursor from './components/MouseCursor.tsx';
-import { User } from '../types.ts';
+import { Track, User } from '../types.ts';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { getGrpcTransport } from './lib/utils.ts';
+import { EditServiceClient } from './grpc/edit.client.ts';
+import { EditAction } from './grpc/edit.ts';
 
 function App() {
     const transport = getGrpcTransport();
     const mouseClient = useMemo(() => new MouseServiceClient(transport), [transport]);
     const userClient = useMemo(() => new UsersServiceClient(transport), [transport]);
+    const editClient = useMemo(() => new EditServiceClient(transport), [transport]);
 
     // A way to abort requests on component destroy - useful for HMR
     const controller = new AbortController();
@@ -48,12 +51,8 @@ function App() {
     useEffect(() => {
         selfIdRef.current = selfId;
         if (selfIdRef.current != 0) {
-            mouseClient
-                .getMouseUpdates({ userId: selfIdRef.current }, { timeout: 10000000, abort: signal })
-                .responses.onMessage((p) => handleUpdatedMousesPositions(p));
-            userClient
-                .getUsersEvents({ userId: selfIdRef.current }, { timeout: 10000000, abort: signal })
-                .responses.onMessage((uc) => handleUserEvent(uc));
+            mouseClient.getMouseUpdates({ userId: selfIdRef.current }, { abort: signal }).responses.onMessage((p) => handleUpdatedMousesPositions(p));
+            userClient.getUsersEvents({ userId: selfIdRef.current }, { abort: signal }).responses.onMessage((uc) => handleUserEvent(uc));
         }
 
         // We must clean things here because HMR is running this on every refresh
@@ -152,6 +151,48 @@ function App() {
         };
     }, []); // run this only once, not on every render
 
+    const handleDrop = (e) => {
+        e.preventDefault();
+
+        const sampleData = e.dataTransfer.getData('sample');
+        const sample = JSON.parse(sampleData);
+
+        editClient
+            .addTrack({ name: '', userId: selfIdRef.current }, { timeout: 500, abort: signal })
+            .then(() => {
+                console.log('Track added');
+            })
+            .catch((error) => {
+                console.error('Error while adding track: ', error);
+            });
+
+        // Get the id of the tracked we just created...
+        // TODO: refactor this hack
+        fetch('/tracks')
+            .then((response) => response.json())
+            .then((data: Track[]) => {
+                console.log(data);
+                console.log(sample);
+                console.log(sample.id);
+                console.log(data.map((t) => t.id));
+                const maxId = data.length == 0 ? 1 : data.map((t) => t.id).sort()[data.length - 1];
+                console.log('found maxId', maxId);
+                editClient.changeSamplePosition(
+                    {
+                        action: EditAction.UPDATE_TRACK,
+                        userId: selfIdRef.current,
+                        instanceId: 0,
+                        sampleId: sample.id,
+                        trackId: maxId,
+                        trackName: '',
+                        startTime: 0,
+                    },
+                    { timeout: 500, abort: signal },
+                );
+                toast.info('Sample pushed to a new track !');
+            });
+    };
+
     return (
         <>
             <Toaster position="top-right" richColors expand={true} />
@@ -170,6 +211,14 @@ function App() {
                 {/* TrackList on the right */}
                 <div className="ml-1/4 p-2 w-full max-w-screen">
                     <TrackList selfId={selfIdRef.current} />
+                </div>
+
+                <div
+                    className="absolute bottom-4 right-4 p-2 bg-blue-100 border border-blue-500 rounded-lg flex items-center justify-center"
+                    onDragOver={(e) => e.preventDefault()} // Permet le drop
+                    onDrop={handleDrop} // Gère l'événement de dépôt
+                >
+                    <p className="text-blue-700">Drop a sample here</p>
                 </div>
             </div>
             {Array.from(otherMouses.values()).map((p) => (
