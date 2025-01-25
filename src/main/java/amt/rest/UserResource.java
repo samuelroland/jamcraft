@@ -9,6 +9,12 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+/**
+ * REST endpoint for managing user-related operations.
+ * Provides functionality for users to leave a session and handles notifications.
+ *
+ * @author Yanis Ouadahi, Samuel Roland, Jarod Streckeisen, Timothée Van Hove
+ */
 @Path("leave")
 public class UserResource {
 
@@ -20,10 +26,18 @@ public class UserResource {
 
     private final Gson gson = new Gson();
 
+    /**
+     * Handles the removal of a user from the session.
+     * Notifies other users about the departure.
+     * Example request:
+     * {@code curl -X POST http://localhost:8080/leave -H "Content-Type: text/plain" -d '{"id": "1", "name": "spy"}'}
+     *
+     * @param request a JSON string containing the user details (e.g., ID and name)
+     * @return a {@link Response} indicating the success or failure of the operation
+     */
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.TEXT_PLAIN)
-    // Test command: curl -X POST http://localhost:8080/leave -H "Content-Type: text/plain" -d '{"id": "1", "name": "spy"}'
     public Response userLeave(String request) {
         if (request == null) {
             return Response.status(Response.Status.BAD_REQUEST)
