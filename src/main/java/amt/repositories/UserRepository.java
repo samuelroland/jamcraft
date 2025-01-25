@@ -5,6 +5,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.Optional;
 
+/**
+ * Repository for managing {@link User} entities.
+ * Extends the {@link BaseRepository} to inherit basic CRUD operations.
+ * Provides additional methods specific to the {@link User} entity.
+ *
+ * @author Yanis Ouadahi, Samuel Roland, Jarod Streckeisen, Timothée Van Hove
+ */
 @ApplicationScoped
 public class UserRepository extends BaseRepository<User, Integer> {
 
@@ -12,11 +19,4 @@ public class UserRepository extends BaseRepository<User, Integer> {
         super(User.class);
     }
 
-    public Optional<User> findByName(String name) {
-        String query = "SELECT u FROM User u WHERE u.name = :name";
-        return entityManager.createQuery(query, User.class)
-                .setParameter("name", name)
-                .getResultStream()
-                .findFirst();
-    }
 }
