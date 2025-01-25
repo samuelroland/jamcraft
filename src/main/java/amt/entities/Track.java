@@ -1,9 +1,17 @@
 package amt.entities;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Represents a track entity in the application.
+ * This entity is mapped to the "tracks" table in the database and stores information
+ * about tracks, including their name, associated samples, and timestamps for creation and modification.
+ *
+ * @author Yanis Ouadahi, Samuel Roland, Jarod Streckeisen, Timothée Van Hove
+ */
 @Entity
 @Table(name = "tracks")
 public class Track {

@@ -4,6 +4,12 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * Represents a sample entity in the application.
+ * This entity is mapped to the "samples" table in the database and stores information
+ * about audio samples, including their name, file path, duration, and creation timestamp.
+ * @author Yanis Ouadahi, Samuel Roland, Jarod Streckeisen, Timothée Van Hove
+ */
 @Entity
 @Table(name = "samples")
 public class Sample {

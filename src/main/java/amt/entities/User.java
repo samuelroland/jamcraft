@@ -1,8 +1,17 @@
 package amt.entities;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
+/**
+ * Represents a user entity in the application.
+ * This entity is mapped to the "users" table in the database and stores information
+ * about users, including their name and the timestamp of their creation.
+ * The creation timestamp is set automatically when the entity is persisted.
+ *
+ * @author Yanis Ouadahi, Samuel Roland, Jarod Streckeisen, Timothée Van Hove
+ */
 @Entity
 @Table(name = "users")
 public class User {
