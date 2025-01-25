@@ -10,12 +10,25 @@ import jakarta.transaction.Transactional;
 
 import java.util.List;
 
+/**
+ * Service for managing {@link User} entities, including operations for creating,
+ * retrieving, and deleting users. Converts between {@link User} entities and {@link UserDTO}.
+ * This service interacts with the {@link UserRepository}.
+ *
+ * @author Yanis Ouadahi, Samuel Roland, Jarod Streckeisen, Timothée Van Hove
+ */
 @ApplicationScoped
 public class UserService implements DtoConverter<User, UserDTO> {
 
     @Inject
     UserRepository userRepository;
 
+    /**
+     * Converts a {@link UserDTO} to a {@link User} entity.
+     *
+     * @param dto the DTO to convert
+     * @return the corresponding {@link User} entity
+     */
     @Override
     public User fromDTO(UserDTO dto) {
         User user = new User();
@@ -24,20 +37,33 @@ public class UserService implements DtoConverter<User, UserDTO> {
         return user;
     }
 
+    /**
+     * Converts a {@link User} entity to a {@link UserDTO}.
+     *
+     * @param user the entity to convert
+     * @return the corresponding {@link UserDTO}
+     */
     @Override
     public UserDTO toDTO(User user) {
         return new UserDTO(user.getId(), user.getName(), user.getCreatedAt());
     }
 
+    /**
+     * Retrieves all users from the database.
+     *
+     * @return a list of all {@link UserDTO}s
+     */
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream().map(this::toDTO).toList();
     }
 
-    public UserDTO getUserById(Integer id) {
-        return userRepository.findById(id).map(this::toDTO)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-    }
-
+    /**
+     * Saves a new user or updates an existing one.
+     *
+     * @param user the user to save
+     * @return the saved {@link UserDTO}
+     * @throws IllegalArgumentException if the user is null
+     */
     @Transactional
     public UserDTO saveUser(UserDTO user) {
         if (user == null) {
@@ -48,6 +74,13 @@ public class UserService implements DtoConverter<User, UserDTO> {
         return userDto;
     }
 
+    /**
+     * Deletes a user by their ID.
+     *
+     * @param id the ID of the user to delete
+     * @return the deleted {@link UserDTO}
+     * @throws IllegalArgumentException if the user is not found
+     */
     @Transactional
     public UserDTO deleteUser(Integer id) {
         var user = userRepository.findById(id).map(this::toDTO)
@@ -55,11 +88,5 @@ public class UserService implements DtoConverter<User, UserDTO> {
         userRepository.deleteById(id);
         System.out.println("User deleted : " + user.name() + " with id: " + user.id());
         return user;
-    }
-
-    @Transactional
-    public UserDTO getUserByName(String name) {
-        return userRepository.findByName(name).map(this::toDTO)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 }

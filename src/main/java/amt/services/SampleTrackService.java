@@ -2,18 +2,21 @@ package amt.services;
 
 import amt.dto.DtoConverter;
 import amt.dto.SampleInTrackDTO;
-import amt.entities.Sample;
+import amt.dto.TrackDTO;
 import amt.entities.SampleTrack;
-import amt.entities.Track;
-import amt.repositories.SampleRepository;
 import amt.repositories.SampleTrackRepository;
-import amt.repositories.TrackRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
-import java.time.LocalDateTime;
-
+/**
+ * Service for managing {@link SampleTrack} entities, including operations for creating,
+ * updating, and removing sample tracks. Implements {@link DtoConverter} for converting
+ * between entities and DTOs.
+ * The service ensures that database operations are wrapped in transactions where required.
+ *
+ * @author Yanis Ouadahi, Samuel Roland, Jarod Streckeisen, Timothée Van Hove
+ */
 @ApplicationScoped
 public class SampleTrackService implements DtoConverter<SampleTrack, SampleInTrackDTO> {
 
@@ -24,19 +27,40 @@ public class SampleTrackService implements DtoConverter<SampleTrack, SampleInTra
     SampleService sampleService;
 
     @Inject
-    // TODO: okay to access repos and not the service here ??
-    TrackRepository trackRepository;
-    @Inject
-    // TODO: okay to access repos and not the service here ??
-    SampleRepository sampleRepository;
+    TrackService trackService;
 
+    /**
+     * Converts a {@link SampleInTrackDTO} into a {@link SampleTrack} entity.
+     *
+     * @param dto the DTO to convert
+     * @return the corresponding {@link SampleTrack} entity
+     * @throws IllegalArgumentException if the sample or track ID in the DTO is null
+     */
     @Override
     public SampleTrack fromDTO(SampleInTrackDTO dto) {
-        return null;
+        if (dto.sample() == null || dto.trackId() == null) {
+            throw new IllegalArgumentException("Sample or Track ID cannot be null.");
+        }
+        SampleTrack sampleTrack = new SampleTrack();
+        sampleTrack.setId(dto.id());
+        sampleTrack.setStartTime(dto.startTime());
+        sampleTrack.setSample(sampleService.fromDTO(dto.sample()));
+        sampleTrack.setTrack(trackService.fromDTO(new TrackDTO(dto.trackId(), dto.trackName(), null, null, null)));
+        return sampleTrack;
     }
 
+    /**
+     * Converts a {@link SampleTrack} entity into a {@link SampleInTrackDTO}.
+     *
+     * @param entity the entity to convert
+     * @return the corresponding {@link SampleInTrackDTO}
+     * @throws IllegalArgumentException if the {@link SampleTrack} entity is null
+     */
     @Override
     public SampleInTrackDTO toDTO(SampleTrack entity) {
+        if (entity == null) {
+            throw new IllegalArgumentException("SampleTrack entity cannot be null");
+        }
         return new SampleInTrackDTO(
                 entity.getId(),
                 sampleService.toDTO(entity.getSample()),
@@ -45,6 +69,13 @@ public class SampleTrackService implements DtoConverter<SampleTrack, SampleInTra
                 entity.getStartTime());
     }
 
+    /**
+     * Removes a {@link SampleTrack} entity by its ID.
+     *
+     * @param instanceId the ID of the sample track to remove
+     * @return the removed {@link SampleInTrackDTO}
+     * @throws IllegalArgumentException if no {@link SampleTrack} is found with the given ID
+     */
     @Transactional
     public SampleInTrackDTO removeSampleTrack(Integer instanceId) {
         var removed = sampleTrackRepository.findById(instanceId)
@@ -53,24 +84,41 @@ public class SampleTrackService implements DtoConverter<SampleTrack, SampleInTra
         sampleTrackRepository.deleteById(instanceId);
         System.out.println(
                 "Sample " + removed.getSample().getName()
-                        + " with instance ID " + removed.getId()
-                        + " has been removed from track " + removed.getTrack().getName());
+                + " with instance ID " + removed.getId()
+                + " has been removed from track " + removed.getTrack().getName());
 
         return toDTO(removed);
     }
 
+    /**
+     * Creates a new {@link SampleTrack} entity.
+     *
+     * @param sampleId     the ID of the sample to associate with the track
+     * @param trackId      the ID of the track
+     * @param newStartTime the starting time of the sample on the track
+     * @return the created {@link SampleInTrackDTO}
+     * @throws IllegalArgumentException if the sample or track with the given IDs is not found
+     */
     @Transactional
     public SampleInTrackDTO createSampleTrack(Integer sampleId, Integer trackId, Double newStartTime) {
+        var track = trackService.getTrackById(trackId);
+        var sample = sampleService.getSampleById(sampleId);
         SampleTrack sampleTrack = new SampleTrack();
-        sampleTrack.setTrack(trackRepository.findById(trackId)
-                .orElseThrow(() -> new IllegalArgumentException("Not found track with trackId")));
+        sampleTrack.setTrack(trackService.fromDTO(track));
+        sampleTrack.setSample(sampleService.fromDTO(sample));
         sampleTrack.setStartTime(newStartTime);
-        sampleTrack.setSample(sampleRepository.findById(sampleId)
-                .orElseThrow(() -> new IllegalArgumentException("Not found sample with given sampleId")));
-        sampleTrackRepository.save(sampleTrack);
-        return toDTO(sampleTrack);
+        var st = sampleTrackRepository.save(sampleTrack);
+        System.out.println("SampleTrack " + st.getId() + " with track id " + st.getTrack().getId() + " has been added.");
+        return toDTO(st);
     }
 
+    /**
+     * Updates the start time of an existing {@link SampleTrack}.
+     *
+     * @param instanceId   the ID of the sample track to update
+     * @param newStartTime the new starting time of the sample on the track
+     * @throws IllegalArgumentException if the {@link SampleTrack} with the given ID is not found
+     */
     @Transactional
     public void updateSampleTrackPosition(Integer instanceId, Double newStartTime) {
         SampleTrack sampleTrack = sampleTrackRepository.findById(instanceId)
@@ -79,9 +127,8 @@ public class SampleTrackService implements DtoConverter<SampleTrack, SampleInTra
         sampleTrack.setStartTime(newStartTime);
         sampleTrackRepository.save(sampleTrack);
         System.out.println("Sample '" + sampleTrack.getSample().getName()
-                + "' on track '" + sampleTrack.getTrack().getName()
-                + "' starting at " + oldStartTime
-                + " has been moved to " + newStartTime);
+                           + "' on track '" + sampleTrack.getTrack().getName()
+                           + "' starting at " + oldStartTime
+                           + " has been moved to " + newStartTime);
     }
-
 }

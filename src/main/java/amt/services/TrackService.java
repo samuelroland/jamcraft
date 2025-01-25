@@ -14,6 +14,13 @@ import jakarta.transaction.Transactional;
 
 import java.util.List;
 
+/**
+ * Service for managing {@link Track} entities, including operations for creating,
+ * updating, and retrieving tracks. Converts between {@link Track} entities and {@link TrackDTO}.
+ * This service interacts with the {@link TrackRepository} and {@link SampleRepository}.
+ *
+ * @author Yanis Ouadahi, Samuel Roland, Jarod Streckeisen, Timothée Van Hove
+ */
 @ApplicationScoped
 public class TrackService implements DtoConverter<Track, TrackDTO> {
 
@@ -26,6 +33,12 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
     @Inject
     SampleService sampleService;
 
+    /**
+     * Converts a {@link TrackDTO} to a {@link Track} entity.
+     *
+     * @param trackDTO the DTO to convert
+     * @return the corresponding {@link Track} entity
+     */
     @Override
     public Track fromDTO(TrackDTO trackDTO) {
         Track track = new Track();
@@ -50,6 +63,12 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
         return track;
     }
 
+    /**
+     * Converts a {@link Track} entity to a {@link TrackDTO}.
+     *
+     * @param track the entity to convert
+     * @return the corresponding {@link TrackDTO}
+     */
     @Override
     public TrackDTO toDTO(Track track) {
         List<SampleInTrackDTO> sampleInTrackDTOs = track.getSamples().stream().map(sampleTrack -> new SampleInTrackDTO(
@@ -67,19 +86,34 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
                 sampleInTrackDTOs);
     }
 
-    public List<TrackDTO> getAllTracks() {
-        return trackRepository.findAll().stream().map(this::toDTO).toList();
-    }
-
+    /**
+     * Retrieves all tracks with their associated samples.
+     *
+     * @return a list of all {@link TrackDTO}s
+     */
     public List<TrackDTO> getAllTracksWithSamples() {
         return trackRepository.findAllWithSamplesLoaded().stream().map(this::toDTO).toList();
     }
 
+    /**
+     * Retrieves a track by its ID.
+     *
+     * @param id the ID of the track
+     * @return the corresponding {@link TrackDTO}
+     * @throws IllegalArgumentException if the track is not found
+     */
     public TrackDTO getTrackById(Integer id) {
         return trackRepository.findById(id).map(this::toDTO)
                 .orElseThrow(() -> new IllegalArgumentException("Track " + id + " not found"));
     }
 
+    /**
+     * Updates the name of a track.
+     *
+     * @param trackId the ID of the track to update
+     * @param newName the new name for the track
+     * @throws IllegalArgumentException if the track is not found
+     */
     @Transactional
     public void updateTrackName(Integer trackId, String newName) {
         Track track = trackRepository.findById(trackId)
@@ -90,18 +124,19 @@ public class TrackService implements DtoConverter<Track, TrackDTO> {
         System.out.println("Track: " + oldName + " has been renamed " + newName);
     }
 
+    /**
+     * Saves a new track or updates an existing one.
+     *
+     * @param trackDTO the track to save
+     * @return the saved {@link TrackDTO}
+     */
     @Transactional
     public TrackDTO saveTrack(TrackDTO trackDTO) {
         var track = trackRepository.save(fromDTO(trackDTO));
 
-        if(track.getName().isEmpty()){
+        if (track.getName().isEmpty()) {
             track.setName("Track " + track.getId());
         }
         return toDTO(track);
-    }
-
-    @Transactional
-    public void deleteTrack(Integer id) {
-        trackRepository.deleteById(id);
     }
 }
