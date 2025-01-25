@@ -3,8 +3,6 @@ package amt.repositories;
 import amt.entities.User;
 import jakarta.enterprise.context.ApplicationScoped;
 
-import java.util.Optional;
-
 /**
  * Repository for managing {@link User} entities.
  * Extends the {@link BaseRepository} to inherit basic CRUD operations.
