@@ -1,16 +1,18 @@
-# Description of the application
+# Jamcraft
 
-The application is a web application allowing many users at the same time to collaborate on a music mix creation. If we think about something well known, we could say that the application is a simplified collaborative version of GarageBand. 
+See [REPORT.md](/docs/REPORT.md) or [slides.pdf](/docs/slides.pdf)
 
 ## Introduction
+Jamcraft a web audio mixing tool that allow multiple users to create small musics collaboratively. All users cursors and timeline interactions are visible in realtime. This is kinda like a very simplified GarageBand but collaborative! There is no existing music collection, but you all users can upload their samples so everyone can use it in the main project.
 
-TODO: add screenshot with a nice audio timeline
+![home.png](imgs/home.png)
+
 
 ## Development setup
 ### Requirements
 - Docker
 - Java
-- FFmpeg (on MacOS `brew install ffmpeg`, otherwise see [download page](https://www.ffmpeg.org/download.html))
+- FFmpeg (on MacOS `brew install ffmpeg`, otherwise see [download page](https://www.ffmpeg.org/download.html)), this should include the `ffprobe` CLI used to extract the audio duration on upload.
 
 ### Setup
 **Clone or get the project**
@@ -20,6 +22,20 @@ cd amtb-lab3-amtb-ouadahi-roland-strcksn-vanhove
 ```
 
 **Run the Envoy proxy**
+
+We have an issue with the proxy, each developer has to locally change the `envoy.yaml` to include the Docker internal host IP.
+
+How to find this special IP ?
+- On Windows: `ipconfig -all` -> Find the HyperV IP
+- On MacOS and Linux: `ip a` -> find the `docker0` IP
+
+Change the given IP at the end of `envoy.yaml` with the one you just found.
+```yml
+    address:
+    socket_address:
+        address: 172.17.0.1
+        port_value: 9000
+```
 
 On MacOS and Linux, this command
 ```sh
@@ -37,31 +53,39 @@ Using the Quarkus CLI
 quarkus dev
 ```
 
-TODO document quarkus.http.host=0.0.0.0
-TODO document proxy IP to change
-TODO: make sure to empty the import.sql or comment it
+If you want to try this with multiple computers, you need to run the quarkus dev server by exposing the port in the network. In your `application.properties`, you have to add this:
+```
+quarkus.http.host=0.0.0.0
+```
 
 Using the Gradle wrapper otherwise
 ```sh
 ./gradlew quarkusDev
 ```
 
+**Database**  
+Under `src/main/resources/import.sql`, we defined a few queries you can use to have a few fake data. The SQL is commented by default so you can try the project with an empty database. If you enable this SQL, you need to add the associated audio files in `audio`.
+
 **Open your browser on `localhost:8080`**
 
-You should see the UI loaded with an empty library and no track, that's normal.
+You should see the UI loaded with a login form, an empty library and no track, that's normal.
 
-TODO: add screenshot with empty UI
+Login form
+
+![login.png](imgs/login.png)
+
+
+Empty UI
+
+![empty-ui.png](imgs/empty-ui.png)
 
 You can take a few audios file in MP3 formats (note for teachers and assistants: take the zip we gave you). You can find way more public domain sounds on `freesound.org` in case you want to try it more.
 
 See usage on how to learn how to use it.
 
-<!--Test the entire setup-->
-
 ## Usage
-1. Login: choose a username for the session, this will be persisted locally to support page refresh
-<!-- 1. Leave : TODO does it work ?? -->
-1. Upload new samples
+1. **Login**: choose a username for the session, this will be persisted locally to support page refresh
+1. **Upload new samples**
     1. Try to drag and drop a MP3 file
     1. You can also automate the upload with this Fish function (if you use Fish)
     ```fish
@@ -74,99 +98,22 @@ See usage on how to learn how to use it.
     end
     ```
     1. You can find uploaded files in the `audio` folder at repository's root
-1. Try to play and see the waveforms of audio in the library on the left
-<!--TODO: screenshot :)-->
-1. Add new tracks by drag and dropping samples from the library to the dedicated zone at bottom right.
-<!--TODO: screenshot :)-->
-1. Load the project timeline by pressing twice on `Load project`
-<!--TODO: screenshot :)-->
-TODO: continue !!
+1. **Try to play** and see the waveforms of samples in the library on the left
+    ![play.png](imgs/play.png)
+1. Add new tracks by drag and dropping samples from the library to the dedicated zone at bottom right. You should see a notification, but the project doesn't reload, that's expected.
+    ![pushed.png](imgs/pushed.png)
+1. Load the project timeline by pressing **twice** on `Load project`. You should now see the track with the dragged sample.
+    ![loaded-1.png](imgs/loaded-1.png)
+1. Add more samples and reload the project
+1. Try to press **Play** and **Pause**
+1. **Shortcuts**: pressing `h` or `l` should go one second before or after. Pressing space should press the play/pause button. Pressing `0` should go at start and `$` at end. These movements are obviously inspired by Vim.
+1. Try to open another browser (not a private window), go on `localhost:8080` too, choose another username, you should see the flying mouse on the first browser.
+1. Try to move a sample on a track, it should move on the other browser in live.
 
-
-
-**Generated README to sort**
-
-----
-
-# jamcraft
-
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
-
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
-
-## Running the application in dev mode
-
-You can run your application in dev mode that enables live coding using:
-
-```shell script
-./gradlew quarkusDev
-```
-
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
-
-## Packaging and running the application
-
-The application can be packaged using:
-
-```shell script
-./gradlew build
-```
-
-It produces the `quarkus-run.jar` file in the `build/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `build/quarkus-app/lib/` directory.
-
-The application is now runnable using `java -jar build/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./gradlew build -Dquarkus.package.jar.type=uber-jar
-```
-
-The application, packaged as an _über-jar_, is now runnable using `java -jar build/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./gradlew build -Dquarkus.native.enabled=true
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./gradlew build -Dquarkus.native.enabled=true -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./build/jamcraft-0.1.0-runner`
-
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/gradle-tooling>.
-
-## Related Guides
-
-- Hibernate ORM ([guide](https://quarkus.io/guides/hibernate-orm)): Define your persistent model with Hibernate ORM and Jakarta Persistence
-- Quinoa ([guide](https://quarkiverse.github.io/quarkiverse-docs/quarkus-quinoa/dev/index.html)): Develop, build, and serve your npm-compatible web applications such as React, Angular, Vue, Lit, Svelte, Astro, SolidJS, and others alongside Quarkus.
-
-## Provided Code
-
-### gRPC
-
-Create your first gRPC service
-
-[Related guide section...](https://quarkus.io/guides/grpc-getting-started)
-
-### Hibernate ORM
-
-Create your first JPA entity
-
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
-
-
-
-### Quinoa
-
-Quinoa codestart added a tiny Vite app in src/main/webui. The page is configured to be visible on <a href="/quinoa">/quinoa</a>.
-
-[Related guide section...](https://quarkiverse.github.io/quarkiverse-docs/quarkus-quinoa/dev/index.html)
+## Unimplemented features
+1. As we finally used Wavesurfer, we had to give up the idea of having tracks that can contain multiple samples, so we ended up having just one track per sample in database.
+1. Remove a sample is not possible
+1. The "nice to have" export feature
+1. Logout - only possible manually in the browser console via `localStorage.clear() `
+1. Production build and deployment with Docker and Docker Compose
 
