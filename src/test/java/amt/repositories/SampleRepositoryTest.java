@@ -19,12 +19,7 @@ public class SampleRepositoryTest {
 
     @Test
     public void testSaveAndFindById() {
-        Sample sample = new Sample();
-        sample.setName("Sample test");
-        sample.setDuration(1.0);
-        sample.setFilepath("/root");
-
-        Sample savedSample = sampleRepository.save(sample);
+        Sample savedSample = addTestSample("Sample test");
 
         assertNotNull(savedSample.getId(), "Saved sample's ID should not be null.");
         assertEquals("Sample test", savedSample.getName(), "Sample's name should match.");
@@ -41,17 +36,25 @@ public class SampleRepositoryTest {
     }
 
     @Test
+    public void testFindByName() {
+        addTestSample("Sample test");
+        var samples = sampleRepository.searchByName("Sample test");
+        assertEquals(samples.getFirst().getName(), "Sample test");
+    }
+
+    @Test
     public void testDeleteById() {
+        Sample savedSample = addTestSample("Sample test");
+        Integer sampleId = savedSample.getId();
+        sampleRepository.deleteById(sampleId);
+        assertFalse(sampleRepository.findById(sampleId).isPresent(), "Sample should be deleted.");
+    }
+
+    private Sample addTestSample(String name){
         Sample sample = new Sample();
-        sample.setName("Second sample");
+        sample.setName(name);
         sample.setDuration(1.0);
         sample.setFilepath("/root");
-
-        Sample savedSample = sampleRepository.save(sample);
-        Integer sampleId = savedSample.getId();
-
-        sampleRepository.deleteById(sampleId);
-
-        assertFalse(sampleRepository.findById(sampleId).isPresent(), "Sample should be deleted.");
+        return sampleRepository.save(sample);
     }
 }
