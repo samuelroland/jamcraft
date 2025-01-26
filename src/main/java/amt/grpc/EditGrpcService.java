@@ -47,7 +47,6 @@ public class EditGrpcService implements EditService {
     @RunOnVirtualThread
     public Uni<Empty> changeSamplePosition(SampleInfo request) {
         try {
-            // TODO: maybe refactor this...
             // Create the sample_tracks if it doesn't exist
             if (request.getInstanceId() == 0) {
                 var result = sampleTrackService.createSampleTrack(request.getSampleId(), request.getTrackId(),
