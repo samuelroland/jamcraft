@@ -14,6 +14,14 @@ import jakarta.inject.Inject;
 
 import java.util.ArrayList;
 
+/**
+ * A gRPC service for managing live editing of tracks and samples.
+ * This service allows users to perform real-time updates to tracks and samples,
+ * including adding, removing, and renaming tracks, as well as changing sample positions.
+ * It uses a {@link BroadcastProcessor} to broadcast changes to all connected clients.
+ *
+ * @author Yanis Ouadahi, Samuel Roland, Jarod Streckeisen, Timothée Van Hove
+ */
 @GrpcService
 public class EditGrpcService implements EditService {
 
@@ -22,14 +30,21 @@ public class EditGrpcService implements EditService {
     @Inject
     SampleTrackService sampleTrackService;
 
-    // BroadcastProcessor for hot streaming user updates
+    /**
+     * A hot stream processor for broadcasting updates to all subscribers.
+     */
     private final BroadcastProcessor<SampleInfo> processor = BroadcastProcessor.create();
 
+
+    /**
+     * Updates the position of a sample or creates a new sample track if it doesn't exist.
+     * Test command: grpcurl -plaintext -d '{\"sampleId\": 3, \"instanceId\": 8, \"startTime\": 42.42, \"trackId\": 4, \"userId\": 2}' localhost:9000 edit.EditService/ChangeSamplePosition
+     *
+     * @param request the {@link SampleInfo} containing details of the sample update.
+     * @return a {@link Uni} with an empty response if the operation succeeds, or a failure if it fails.
+     */
     @Override
     @RunOnVirtualThread
-    // Test command: grpcurl -plaintext -d '{\"sampleId\": 3, \"instanceId\": 8,
-    // \"startTime\": 42.42, \"trackId\": 4, \"userId\": 2}' localhost:9000
-    // edit.EditService/ChangeSamplePosition
     public Uni<Empty> changeSamplePosition(SampleInfo request) {
         try {
             // TODO: maybe refactor this...
@@ -44,7 +59,7 @@ public class EditGrpcService implements EditService {
                 System.out.println("Updated sample position");
             }
 
-            // // Create the response and broadcast
+            // Create the response and broadcast
             processor.onNext(
                     SampleInfo.newBuilder()
                             .setAction(EditAction.UPDATE_TRACK)
@@ -64,10 +79,15 @@ public class EditGrpcService implements EditService {
         }
     }
 
+    /**
+     * Removes a sample track from the database.
+     * Test command : grpcurl -plaintext -d '{\"instanceId\": 1, \"userId\": 2 }' localhost:9000 edit.EditService/RemoveSample
+     *
+     * @param request the {@link SampleInstanceId} containing the ID of the sample track to remove.
+     * @return a {@link Uni} with an empty response if the operation succeeds, or a failure if it fails.
+     */
     @Override
     @RunOnVirtualThread
-    // Test command : grpcurl -plaintext -d '{\"instanceId\": 1, \"userId\": 2 }'
-    // localhost:9000 edit.EditService/RemoveSample
     public Uni<Empty> removeSample(SampleInstanceId request) {
         try {
             // Remove the SampleTrack from the database
@@ -92,8 +112,13 @@ public class EditGrpcService implements EditService {
         }
     }
 
-    // Test command: grpcurl -plaintext -d '{\"trackId\": 3, \"name\": \"Drums\",
-    // \"userId\": 8 }' localhost:9000 edit.EditService/UpdateTrackName
+    /**
+     * Updates the name of an existing track.
+     * Test command: grpcurl -plaintext -d '{\"trackId\": 3, \"name\": \"Drums\", \"userId\": 8 }' localhost:9000 edit.EditService/UpdateTrackName
+     *
+     * @param request the {@link TrackInfo} containing the ID of the track and its new name.
+     * @return a {@link Uni} with an empty response if the operation succeeds, or a failure if it fails.
+     */
     @Override
     @RunOnVirtualThread
     public Uni<Empty> updateTrackName(TrackInfo request) {
@@ -112,13 +137,18 @@ public class EditGrpcService implements EditService {
             return Uni.createFrom().item(Empty.getDefaultInstance());
         } catch (IllegalArgumentException e) {
             System.err.println("Error renaming track id " + request.getTrackId() + " to " + request.getName() + " : "
-                    + e.getMessage());
+                               + e.getMessage());
             return Uni.createFrom().failure(e);
         }
     }
 
-    // Test command: grpcurl -plaintext -d '{\"name\": \"Test track\", \"userId\": 8
-    // }' localhost:9000 edit.EditService/AddTrack
+    /**
+     * Adds a new track to the database.
+     * Test command: grpcurl -plaintext -d '{\"name\": \"Test track\", \"userId\": 8}' localhost:9000 edit.EditService/AddTrack
+     *
+     * @param request the {@link TrackName} containing the name of the new track.
+     * @return a {@link Uni} with an empty response if the operation succeeds, or a failure if it fails.
+     */
     @Override
     @RunOnVirtualThread
     public Uni<Empty> addTrack(TrackName request) {
@@ -141,8 +171,15 @@ public class EditGrpcService implements EditService {
         }
     }
 
-    // Test command: grpcurl -plaintext -d '{\"id\": 1}' localhost:9000
-    // edit.EditService/GetEditEvents
+    /**
+     * Provides a real-time stream of edit events to all subscribers.
+     * Clients can subscribe to this method to receive updates about edits
+     * made by other users, excluding their own updates.
+     * Test command: grpcurl -plaintext -d '{\"id\": 1}' localhost:9000 edit.EditService/GetEditEvents
+     *
+     * @param request the {@link UserId} containing the ID of the requesting user.
+     * @return a {@link Multi} stream of {@link SampleInfo} updates.
+     */
     @Override
     @RunOnVirtualThread
     public Multi<SampleInfo> getEditEvents(UserId request) {
