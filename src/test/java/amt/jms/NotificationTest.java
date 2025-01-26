@@ -6,6 +6,7 @@ import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSConsumer;
 import jakarta.jms.JMSContext;
 import jakarta.jms.Queue;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Test;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -19,6 +20,9 @@ public class NotificationTest {
     @Inject
     NotificationProducer producer;
 
+    @ConfigProperty(name = "notification.queue.name")
+    String queueName;
+
     @Inject
     ConnectionFactory connectionFactory;
 
@@ -26,7 +30,7 @@ public class NotificationTest {
     public void testNotification() {
         // Create a temporary consumer to validate the message
         try (JMSContext context = connectionFactory.createContext()) {
-            Queue queue = context.createQueue("notifications");
+            Queue queue = context.createQueue(queueName);
             JMSConsumer consumer = context.createConsumer(queue);
 
             // Send a message
@@ -34,10 +38,10 @@ public class NotificationTest {
             producer.sendNotification(user);
 
             // Receive the message
-            String receivedMessage = consumer.receiveBody(String.class, 2000);
+            UserDTO receivedUser = consumer.receiveBody(UserDTO.class, 2000);
 
             // Assert that the received message matches the sent message
-            assertEquals(user, receivedMessage, "The received message should match the sent message");
+            assertEquals(user, receivedUser, "The received message should match the sent message");
         }
     }
 }

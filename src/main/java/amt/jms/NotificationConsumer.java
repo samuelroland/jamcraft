@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSConsumer;
 import jakarta.jms.JMSContext;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import io.smallrye.mutiny.Multi;
 
@@ -17,6 +18,10 @@ public class NotificationConsumer {
     @Inject
     ConnectionFactory connectionFactory;
 
+    @ConfigProperty(name = "notification.queue.name")
+    String queueName;
+
+
     private JMSContext context;
     private JMSConsumer consumer;
 
@@ -25,24 +30,29 @@ public class NotificationConsumer {
     @PostConstruct
     public void start() {
         context = connectionFactory.createContext(JMSContext.AUTO_ACKNOWLEDGE);
-        consumer = context.createConsumer(context.createQueue("notifications"));
+        consumer = context.createConsumer(context.createQueue(queueName));
+        LOG.info(getClass().getSimpleName() + " started. Listening to queue: " + queueName);
     }
 
     public Multi<UserDTO> getNotificationStream() {
-        // Create a Multi stream from JMS consumer
         return Multi.createFrom().emitter(emitter -> {
-            new Thread(() -> {
+            Runnable task = () -> {
                 try {
                     while (true) {
                         UserDTO user = consumer.receiveBody(UserDTO.class);
-                        LOG.info("Received notification: " + user);
-                        emitter.emit(user);
+                        if (user != null) {
+                            LOG.info("Received notification: " + user);
+                            emitter.emit(user);
+                        }
                     }
                 } catch (Exception e) {
                     LOG.error("Error receiving message", e);
                     emitter.fail(e);
                 }
-            }).start();
+            };
+            Thread thread = new Thread(task, "NotificationConsumerThread");
+            thread.setDaemon(true);
+            thread.start();
         });
     }
 
@@ -50,6 +60,8 @@ public class NotificationConsumer {
     public void stop() {
         if (context != null) {
             context.close();
+            LOG.info("NotificationConsumer stopped.");
         }
     }
 }
+
