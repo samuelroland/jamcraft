@@ -1,5 +1,7 @@
 # Jamcraft
 
+**Authors**: Yanis Ouadahi, Samuel Roland, Jarod Streckeisen, Timothée Van Hove
+
 See [REPORT.md](/docs/REPORT.md) or [slides.pdf](/docs/slides.pdf)
 
 ## Introduction
@@ -111,6 +113,10 @@ See usage on how to learn how to use it.
 1. Try to move a sample on a track, it should move on the other browser in live.
 
 ## Unimplemented features
+Among the imagined user stories, here is what we didn't have time to implement
+1. Search in the library
+1. We tried to implement the user leave with this is not working all the time
+1. We didn't implemented trim and cut of sounds
 1. As we finally used Wavesurfer, we had to give up the idea of having tracks that can contain multiple samples, so we ended up having just one track per sample in database.
 1. Remove a sample is not possible
 1. The "nice to have" export feature
