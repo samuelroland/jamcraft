@@ -1,11 +1,9 @@
 package amt.rest;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
 
 import amt.dto.SampleDTO;
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -29,11 +27,11 @@ import jakarta.ws.rs.core.Response;
 public class SampleResource {
 
     // TODO: make sure this folder works in production too
-    private static String AUDIO_STORAGE_FOLDER = "audio/";
+    private static final String AUDIO_STORAGE_FOLDER = "audio/";
 
     // As a simplification, we decided to be Linux/Mac specific, and install
     // ffmpeg+ffprobe in the docker image for production deployment
-    private static String FFPROBE_PATH = "/usr/bin/ffprobe";
+    private static final String FFPROBE_PATH = "/usr/bin/ffprobe";
 
     @Inject
     SampleService sampleService;
@@ -93,7 +91,4 @@ public class SampleResource {
         public FileUpload file;
 
     }
-    // TODO Routes: Track:
-    // POST upload des samples depuis webapp
-    // Export du projet format mp3 => Route /export (exportResource)
 }

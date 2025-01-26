@@ -2,7 +2,7 @@ package amt.utils;
 
 // Represents an error to convert to JSON
 public class ErrorResponse {
-    private String message;
+    private final String message;
 
     public ErrorResponse(String message) {
         this.message = message;
