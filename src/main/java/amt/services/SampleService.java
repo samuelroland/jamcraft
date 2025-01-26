@@ -60,6 +60,7 @@ public class SampleService implements DtoConverter<Sample, SampleDTO> {
      *
      * @return a list of all {@link SampleDTO}s
      */
+    @Transactional
     public List<SampleDTO> getAllSamples() {
         return sampleRepository.findAll().stream().map(this::toDTO).toList();
     }
@@ -71,6 +72,7 @@ public class SampleService implements DtoConverter<Sample, SampleDTO> {
      * @return the corresponding {@link SampleDTO}
      * @throws IllegalArgumentException if no sample is found
      */
+    @Transactional
     public SampleDTO getSampleById(Integer id) {
         return sampleRepository.findById(id).map(this::toDTO)
                 .orElseThrow(() -> new IllegalArgumentException("Sample not found"));
