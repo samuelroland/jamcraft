@@ -1,8 +1,10 @@
 # Jamcraft
 
+**Warning: the project is done will not be developed further, some parts are unstable and it is definitely not ready for real use.** 
+
 **Authors**: Yanis Ouadahi, Samuel Roland, Jarod Streckeisen, Timothée Van Hove
 
-See [REPORT.md](/docs/REPORT.md) or [slides.pdf](/docs/slides.pdf)
+See [initial lab instructions](lab3.md), our [small report describing the project idea](/docs/REPORT.md) and [the final slides](/docs/slides.pdf).
 
 ## Introduction
 Jamcraft a web audio mixing tool that allow multiple users to create small musics collaboratively. All users cursors and timeline interactions are visible in realtime. This is kinda like a very simplified GarageBand but collaborative! There is no existing music collection, but you all users can upload their samples so everyone can use it in the main project.
@@ -19,8 +21,8 @@ Jamcraft a web audio mixing tool that allow multiple users to create small music
 ### Setup
 **Clone or get the project**
 ```sh
-git clone git@github.com:amt-classroom/amtb-lab3-amtb-ouadahi-roland-strcksn-vanhove.git
-cd amtb-lab3-amtb-ouadahi-roland-strcksn-vanhove
+git clone https://github.com/samuelroland/jamcraft
+cd jamcraft
 ```
 
 **Run the Envoy proxy**
